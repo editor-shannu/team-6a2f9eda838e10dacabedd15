@@ -48,6 +48,7 @@ export default function Navbar({ onSearch }) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
+              <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden lg:inline-flex items-center px-1.5 py-0.5 text-xs text-gray-400 bg-gray-100 rounded">/</kbd>
             </form>
           </div>
 

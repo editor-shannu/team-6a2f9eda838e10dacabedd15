@@ -1,10 +1,15 @@
 'use client';
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import QuestionCard from '@/components/QuestionCard';
 import Pagination from '@/components/Pagination';
 import api from '@/lib/api';
+
+function isInputFocused() {
+  const active = document.activeElement;
+  return active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
+}
 
 function QuestionsPageContent() {
   const searchParams = useSearchParams();
@@ -14,6 +19,7 @@ function QuestionsPageContent() {
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState(searchParams.get('sort') || 'newest');
   const [tag, setTag] = useState(searchParams.get('tag') || '');
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const page = parseInt(searchParams.get('page') || '1');
 
   useEffect(() => {
@@ -27,10 +33,33 @@ function QuestionsPageContent() {
       .finally(() => setLoading(false));
   }, [page, sort, tag]);
 
+  useEffect(() => {
+    setSelectedIndex(-1);
+  }, [questions]);
+
   const changeSort = (newSort) => {
     setSort(newSort);
     router.push(`/questions?sort=${newSort}${tag ? `&tag=${tag}` : ''}`);
   };
+
+  const handleKeyDown = useCallback((e) => {
+    if (isInputFocused()) return;
+    if (e.key === 'j' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex(prev => Math.min(prev + 1, questions.length - 1));
+    } else if (e.key === 'k' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex(prev => Math.max(prev - 1, -1));
+    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+      e.preventDefault();
+      router.push(`/questions/${questions[selectedIndex]._id}`);
+    }
+  }, [questions, selectedIndex, router]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -88,8 +117,8 @@ function QuestionsPageContent() {
       ) : (
         <>
           <div className="space-y-4">
-            {questions.map(q => (
-              <QuestionCard key={q._id} question={q} />
+            {questions.map((q, idx) => (
+              <QuestionCard key={q._id} question={q} isSelected={selectedIndex === idx} />
             ))}
           </div>
           <Pagination pagination={pagination} basePath="/questions" queryParams={{ sort, tag }} />

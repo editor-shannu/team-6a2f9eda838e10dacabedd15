@@ -1,16 +1,23 @@
 'use client';
-import { Suspense, useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Suspense, useState, useEffect, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Pagination from '@/components/Pagination';
 import api from '@/lib/api';
 
+function isInputFocused() {
+  const active = document.activeElement;
+  return active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
+}
+
 function FAQsPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [faqs, setFaqs] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const page = parseInt(searchParams.get('page') || '1');
   const category = searchParams.get('category') || '';
 
@@ -28,6 +35,29 @@ function FAQsPageContent() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [page, category]);
+
+  useEffect(() => {
+    setSelectedIndex(-1);
+  }, [faqs]);
+
+  const handleKeyDown = useCallback((e) => {
+    if (isInputFocused()) return;
+    if (e.key === 'j' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex(prev => Math.min(prev + 1, faqs.length - 1));
+    } else if (e.key === 'k' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex(prev => Math.max(prev - 1, -1));
+    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+      e.preventDefault();
+      router.push(`/faqs/${faqs[selectedIndex].slug}`);
+    }
+  }, [faqs, selectedIndex, router]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -77,8 +107,14 @@ function FAQsPageContent() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {faqs.map(faq => (
-              <Link key={faq._id} href={`/faqs/${faq.slug}`} className="card-hover p-6">
+            {faqs.map((faq, idx) => (
+              <Link
+                key={faq._id}
+                href={`/faqs/${faq.slug}`}
+                className={`card-hover p-6 border-2 transition-all ${
+                  selectedIndex === idx ? 'border-primary-500 bg-primary-50' : 'border-transparent'
+                }`}
+              >
                 <div className="flex items-center gap-2 mb-3">
                   {faq.isOfficial && <span className="badge-green text-xs">Official</span>}
                   {faq.category && <span className="badge-gray text-xs capitalize">{faq.category}</span>}

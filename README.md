@@ -102,6 +102,19 @@ faq-site/
 - **Admin panel** — manage users, view flagged content, clear cache
 - **Real-time updates** — new answers appear instantly via Socket.IO
 - **Responsive** — mobile-friendly with Tailwind CSS
+- **Keyboard shortcuts** — efficient navigation without mouse
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+K` or `/` | Open search modal |
+| `j` or `↓` | Navigate down in lists |
+| `k` or `↑` | Navigate up in lists |
+| `Enter` | View/open selected item |
+| `Esc` | Close modal or clear selection |
+
+These shortcuts work on the Questions and FAQs list pages, as well as in the search modal.
 
 ## API Overview
 

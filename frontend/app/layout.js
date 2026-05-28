@@ -1,6 +1,7 @@
 import '@/styles/globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { SocketProvider } from '@/context/SocketContext';
+import { KeyboardProvider } from '@/context/KeyboardContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Toaster } from 'react-hot-toast';
@@ -16,12 +17,14 @@ export default function RootLayout({ children }) {
       <body className="min-h-screen flex flex-col">
         <AuthProvider>
           <SocketProvider>
-            <Navbar />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
-            <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+            <KeyboardProvider>
+              <Navbar />
+              <main className="flex-1">
+                {children}
+              </main>
+              <Footer />
+              <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+            </KeyboardProvider>
           </SocketProvider>
         </AuthProvider>
       </body>

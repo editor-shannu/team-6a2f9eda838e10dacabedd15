@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { formatDate, truncate } from '@/lib/utils';
 
-export default function QuestionCard({ question }) {
+export default function QuestionCard({ question, isSelected }) {
   return (
-    <div className="card-hover p-4 sm:p-6">
+    <div className={`card-hover p-4 sm:p-6 border-2 transition-all ${isSelected ? 'border-primary-500 bg-primary-50' : 'border-transparent'}`}>
       <div className="flex gap-4">
         <div className="hidden sm:flex flex-col items-center gap-1 text-sm min-w-[60px]">
           <span className="font-semibold text-gray-900">{question.upvotes || 0}</span>
