@@ -8,12 +8,18 @@ const { emitToUser } = require('../socket');
 
 exports.vote = async (req, res, next) => {
   try {
-    const { targetType, targetId, voteType } = req.body;
+    const { targetType, targetId, voteType, reason, reasonText } = req.body;
     if (!['Question', 'Answer'].includes(targetType)) {
       throw new AppError('Invalid target type', 400);
     }
     if (!['upvote', 'downvote'].includes(voteType)) {
       throw new AppError('Invalid vote type', 400);
+    }
+    if (voteType === 'downvote' && reason) {
+      const validReasons = ['incorrect', 'incomplete', 'unclear', 'harmful', 'spam', 'other'];
+      if (!validReasons.includes(reason)) {
+        throw new AppError('Invalid reason', 400);
+      }
     }
 
     const Model = targetType === 'Question' ? Question : Answer;
@@ -42,6 +48,8 @@ exports.vote = async (req, res, next) => {
     if (existingVote) {
       const oldType = existingVote.voteType;
       existingVote.voteType = voteType;
+      existingVote.reason = voteType === 'downvote' ? reason : null;
+      existingVote.reasonText = voteType === 'downvote' ? reasonText : null;
       await existingVote.save();
       await Model.findByIdAndUpdate(targetId, {
         $inc: { [`${oldType}s`]: -1, [`${voteType}s`]: 1 },
@@ -59,6 +67,8 @@ exports.vote = async (req, res, next) => {
       target: targetId,
       targetType,
       voteType,
+      reason: voteType === 'downvote' ? reason : null,
+      reasonText: voteType === 'downvote' ? reasonText : null,
     });
     await Model.findByIdAndUpdate(targetId, { $inc: { [`${voteType}s`]: 1 } });
 

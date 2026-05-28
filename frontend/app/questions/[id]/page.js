@@ -21,6 +21,9 @@ export default function QuestionDetailPage() {
   const [answering, setAnswering] = useState(false);
   const [userVotes, setUserVotes] = useState({});
   const [saved, setSaved] = useState(false);
+  const [downvoteModal, setDownvoteModal] = useState({ open: false, targetType: null, targetId: null });
+  const [selectedReason, setSelectedReason] = useState('');
+  const [reasonText, setReasonText] = useState('');
 
   const fetchQuestion = useCallback(async () => {
     try {
@@ -59,10 +62,17 @@ export default function QuestionDetailPage() {
     }
   }, [socket, id]);
 
-  const handleVote = async (targetType, targetId, voteType) => {
+  const handleVote = async (targetType, targetId, voteType, reason, reasonText) => {
     if (!user) { toast.error('Please login to vote'); return; }
+    if (voteType === 'downvote' && !reason) {
+      setDownvoteModal({ open: true, targetType, targetId });
+      return;
+    }
     try {
-      await api.post('/votes', { targetType, targetId, voteType });
+      await api.post('/votes', { targetType, targetId, voteType, reason, reasonText });
+      setDownvoteModal({ open: false, targetType: null, targetId: null });
+      setSelectedReason('');
+      setReasonText('');
       if (targetType === 'Question') {
         fetchQuestion();
       } else {
@@ -71,6 +81,10 @@ export default function QuestionDetailPage() {
     } catch (err) {
       toast.error(err.message || 'Vote failed');
     }
+  };
+
+  const submitDownvote = () => {
+    handleVote(downvoteModal.targetType, downvoteModal.targetId, 'downvote', selectedReason, reasonText);
   };
 
   const handleSave = async () => {
@@ -359,6 +373,57 @@ export default function QuestionDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Downvote Reason Modal */}
+      {downvoteModal.open && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Why are you downvoting?</h3>
+            <div className="space-y-2 mb-4">
+              {[
+                { value: 'incorrect', label: 'Incorrect information' },
+                { value: 'incomplete', label: 'Incomplete answer' },
+                { value: 'unclear', label: 'Unclear or confusing' },
+                { value: 'harmful', label: 'Harmful or unsafe' },
+                { value: 'spam', label: 'Spam or irrelevant' },
+                { value: 'other', label: 'Other' },
+              ].map(r => (
+                <label key={r.value} className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50">
+                  <input
+                    type="radio"
+                    name="reason"
+                    value={r.value}
+                    checked={selectedReason === r.value}
+                    onChange={(e) => setSelectedReason(e.target.value)}
+                    className="text-primary-600"
+                  />
+                  <span className="text-sm text-gray-700">{r.label}</span>
+                </label>
+              ))}
+            </div>
+            {selectedReason === 'other' && (
+              <textarea
+                value={reasonText}
+                onChange={(e) => setReasonText(e.target.value)}
+                placeholder="Explain why (optional)"
+                className="input w-full mb-4"
+                rows={3}
+              />
+            )}
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => { setDownvoteModal({ open: false, targetType: null, targetId: null }); setSelectedReason(''); setReasonText(''); }}
+                className="btn-secondary"
+              >
+                Cancel
+              </button>
+              <button onClick={submitDownvote} className="btn-danger" disabled={!selectedReason}>
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
