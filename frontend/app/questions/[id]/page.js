@@ -137,11 +137,12 @@ export default function QuestionDetailPage() {
   };
 
   const canEscalate = () => {
-    if (!user || user._id !== question.author?._id) return false;
+    if (!user) return false;
+    const isAuthor = user._id === question.author?._id;
+    const isModOrAdmin = user.role === 'admin' || user.role === 'moderator';
+    if (!isAuthor && !isModOrAdmin) return false;
     if (question.isEscalated || question.resolutionStatus === 'escalated') return false;
-    const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
-    if (new Date(question.createdAt).getTime() < twentyFourHoursAgo && question.answerCount === 0) return true;
-    return false;
+    return true;
   };
 
   const handleDelete = async () => {
