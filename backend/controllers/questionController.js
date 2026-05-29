@@ -451,16 +451,34 @@ exports.escalateQuestion = async (req, res, next) => {
     if (question.author.toString() !== req.user._id.toString()) {
       throw new AppError('Only the author can escalate', 403);
     }
-    if (!question.acceptedAnswer) {
-      throw new AppError('No accepted answer to escalate from', 400);
+    if (question.isEscalated) {
+      throw new AppError('Question already escalated', 400);
+    }
+    if (question.resolutionStatus === 'escalated') {
+      throw new AppError('Question already escalated', 400);
+    }
+
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    if (question.createdAt > twentyFourHoursAgo) {
+      throw new AppError('Question cannot be escalated within 24 hours of creation', 400);
+    }
+
+    const Answer = require('../models/Answer');
+    const otherAnswersCount = await Answer.countDocuments({
+      question: question._id,
+      author: { $ne: req.user._id },
+      isDeleted: false,
+    });
+    if (otherAnswersCount > 0) {
+      throw new AppError('Question has answers from other users, cannot escalate', 400);
     }
 
     question.resolutionStatus = 'escalated';
+    question.isEscalated = true;
     question.escalatedAt = new Date();
-    question.escalationReason = reason || 'Student still needs help';
+    question.escalationReason = reason || 'No response received within 24 hours';
     await question.save();
 
-    // Notify moderators/admins
     const Notification = require('../models/Notification');
     const User = require('../models/User');
     const moderators = await User.find({ role: { $in: ['admin', 'moderator'] } });
@@ -469,7 +487,7 @@ exports.escalateQuestion = async (req, res, next) => {
         recipient: mod._id,
         type: 'escalation',
         title: 'Question escalated - needs attention',
-        message: `Question "${question.title}" was escalated by the student: ${reason || 'No reason provided'}`,
+        message: `Question "${question.title}" was escalated by the author: ${reason || 'No response received within 24 hours'}`,
         link: `/questions/${question._id}`,
         referenceType: 'Question',
         reference: question._id,

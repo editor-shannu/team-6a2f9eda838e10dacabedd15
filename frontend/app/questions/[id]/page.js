@@ -22,6 +22,8 @@ export default function QuestionDetailPage() {
   const [userVotes, setUserVotes] = useState({});
   const [saved, setSaved] = useState(false);
   const [recentlyPostedId, setRecentlyPostedId] = useState(null);
+  const [escalateModal, setEscalateModal] = useState({ open: false });
+  const [escalationReason, setEscalationReason] = useState('');
 
   const fetchQuestion = useCallback(async () => {
     try {
@@ -120,6 +122,26 @@ export default function QuestionDetailPage() {
     } catch (err) {
       toast.error(err.message);
     }
+  };
+
+  const handleEscalate = async () => {
+    try {
+      await api.patch(`/questions/${id}/escalate`, { reason: escalationReason });
+      toast.success('Question escalated. A moderator will review it.');
+      setEscalateModal({ open: false });
+      setEscalationReason('');
+      fetchQuestion();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  const canEscalate = () => {
+    if (!user || user._id !== question.author?._id) return false;
+    if (question.isEscalated || question.resolutionStatus === 'escalated') return false;
+    const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
+    if (new Date(question.createdAt).getTime() < twentyFourHoursAgo && question.answerCount === 0) return true;
+    return false;
   };
 
   const handleDelete = async () => {
@@ -257,6 +279,11 @@ export default function QuestionDetailPage() {
           </Link>
           <span>asked {formatDate(question.createdAt)}</span>
           <span>{question.viewCount} views</span>
+          {canEscalate() && (
+            <button onClick={() => setEscalateModal({ open: true })} className="ml-2 text-orange-600 hover:text-orange-700 font-medium text-xs border border-orange-300 rounded px-2 py-0.5">
+              Escalate Query
+            </button>
+          )}
         </div>
       </div>
 
@@ -362,6 +389,33 @@ export default function QuestionDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Escalate Question Modal */}
+      {escalateModal.open && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Escalate Question</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Your question has had no responses for 24 hours. Escalating will notify moderators to review and potentially highlight your question.
+            </p>
+            <textarea
+              value={escalationReason}
+              onChange={(e) => setEscalationReason(e.target.value)}
+              className="input mb-4 w-full"
+              placeholder="Reason for escalation (optional)"
+              rows={3}
+            />
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => { setEscalateModal({ open: false }); setEscalationReason(''); }} className="btn-secondary">
+                Cancel
+              </button>
+              <button onClick={handleEscalate} className="btn-warning">
+                Escalate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
