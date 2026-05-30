@@ -4,7 +4,7 @@ const User = require('../models/User');
 const users = [
   {
     username: 'admin',
-    email: 'admin@faqsite.local',
+    email: 'admin@quorafaq.com',
     password: 'admin123',
     displayName: 'Administrator',
     bio: 'Site administrator with full access',
@@ -15,7 +15,7 @@ const users = [
   },
   {
     username: 'moderator',
-    email: 'moderator@faqsite.local',
+    email: 'moderator@quorafaq.com',
     password: 'mod12345',
     displayName: 'Senior Moderator',
     bio: 'Community moderator',
@@ -25,9 +25,9 @@ const users = [
     isBanned: false
   },
   {
-    username: 'user',
-    email: 'user@faqsite.local',
-    password: 'user12345',
+    username: 'student',
+    email: 'student@quorafaq.com',
+    password: 'student123',
     displayName: 'Regular Member',
     bio: 'Active community member',
     role: 'user',
@@ -43,9 +43,18 @@ async function seed() {
     console.log('Connected to MongoDB');
 
     for (const u of users) {
-      const existing = await User.findOne({ email: u.email });
-      if (existing) {
-        console.log('User already exists:', u.username);
+      const existingByEmail = await User.findOne({ email: u.email });
+      const existingByUsername = await User.findOne({ username: u.username });
+      if (existingByEmail || existingByUsername) {
+        console.log('User already exists:', u.username, '- updating if needed');
+        if (existingByEmail && existingByEmail.username !== u.username) {
+          console.log('  Email conflict with user:', existingByEmail.username);
+        }
+        if (existingByUsername && existingByUsername.email !== u.email) {
+          console.log('  Updating email for:', u.username);
+          existingByUsername.email = u.email;
+          await existingByUsername.save();
+        }
       } else {
         await User.create(u);
         console.log('Created user:', u.username);
@@ -53,9 +62,9 @@ async function seed() {
     }
 
     console.log('\n--- Credentials ---');
-    console.log('Admin:     admin@faqsite.local / admin123');
-    console.log('Moderator: moderator@faqsite.local / mod12345');
-    console.log('User:      user@faqsite.local / user12345');
+    console.log('Admin:     admin@quorafaq.com / admin123');
+    console.log('Moderator: moderator@quorafaq.com / mod12345');
+    console.log('Student:   student@quorafaq.com / student123');
 
     await mongoose.disconnect();
     console.log('\nDone!');
