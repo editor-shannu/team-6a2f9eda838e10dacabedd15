@@ -243,8 +243,6 @@ exports.getQuestion = async (req, res, next) => {
         );
         await Question.findByIdAndUpdate(question._id, { $inc: { viewCount: 1 } });
       }
-    } else {
-      await Question.findByIdAndUpdate(question._id, { $inc: { viewCount: 1 } });
     }
 
     const isModOrAdmin = req.user && (req.user.role === 'admin' || req.user.role === 'moderator');
