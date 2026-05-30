@@ -90,7 +90,7 @@ export default function HomePage() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-[var(--color-text)]">Trending This Week</h2>
               <Link href="/questions?sort=votes" className="text-sm text-primary-600 hover:text-primary-700 font-medium">
-View all \u2192
+View all &rarr;
               </Link>
             </div>
             <div className="space-y-3">
