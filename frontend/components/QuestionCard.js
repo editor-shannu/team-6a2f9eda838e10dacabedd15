@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
 import { formatDate, truncate } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import DownvoteReasonModal from './DownvoteReasonModal';
 
 export default function QuestionCard({ question }) {
   const { user } = useAuth();
@@ -15,6 +16,8 @@ export default function QuestionCard({ question }) {
   const [meTooCount, setMeTooCount] = useState(question.meTooCount || 0);
   const [hasMeToo, setHasMeToo] = useState(question.hasMeToo || false);
   const [meTooLoading, setMeTooLoading] = useState(false);
+  const [showDownvoteModal, setShowDownvoteModal] = useState(false);
+  const [pendingDownvote, setPendingDownvote] = useState(false);
 
   useEffect(() => {
     if (user && question._id) {
@@ -24,7 +27,7 @@ export default function QuestionCard({ question }) {
     }
   }, [user, question._id]);
 
-  const handleVote = async (e, voteType) => {
+  const handleVote = async (e, voteType, reasonData = null) => {
     e.preventDefault();
     e.stopPropagation();
     if (!user) { toast.error('Please login to vote'); return; }
@@ -32,7 +35,12 @@ export default function QuestionCard({ question }) {
 
     setLoading(true);
     try {
-      await api.post('/votes', { targetType: 'Question', targetId: question._id, voteType });
+      const payload = { targetType: 'Question', targetId: question._id, voteType };
+      if (voteType === 'downvote' && reasonData) {
+        payload.reason = reasonData.reason;
+        payload.reasonText = reasonData.reasonText;
+      }
+      await api.post('/votes', payload);
       const data = await api.get(`/votes/Question/${question._id}`);
       setUserVote(data.vote);
       const newQuestion = await api.get(`/questions/${question._id}`);
@@ -43,6 +51,11 @@ export default function QuestionCard({ question }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDownvoteWithReason = (reasonData) => {
+    setPendingDownvote(true);
+    handleVote({ preventDefault: () => {}, stopPropagation: () => {} }, 'downvote', reasonData);
   };
 
   const handleMeToo = async (e) => {
@@ -63,81 +76,105 @@ export default function QuestionCard({ question }) {
     }
   };
 
+  const score = upvotes - downvotes;
+
   return (
-    <div className="card-hover p-4 sm:p-6">
-      <div className="flex gap-4">
-        <div className="hidden sm:flex flex-col items-center gap-1 text-sm min-w-[60px]">
+    <div className="card-hover p-5 sm:p-6 group">
+      <div className="flex gap-5">
+        <div className="hidden sm:flex flex-col items-center gap-2 min-w-[56px]">
           <button
             onClick={(e) => handleVote(e, 'upvote')}
-            className={`p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 ${userVote === 'upvote' ? 'text-green-600' : 'text-gray-400 dark:text-gray-500 hover:text-green-600'} ${loading ? 'opacity-50' : ''}`}
+            className={`p-2 rounded-xl transition-all ${
+              userVote === 'upvote' 
+                ? 'bg-emerald-500/10 text-emerald-600' 
+                : 'text-[var(--color-text-muted)] hover:bg-emerald-500/10 hover:text-emerald-600'
+            } ${loading ? 'opacity-50' : ''}`}
             disabled={loading}
-            title={`${upvotes} likes`}
+            title={`${upvotes} upvotes`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
           </button>
-          <span className={`font-semibold ${upvotes - downvotes > 0 ? 'text-green-600' : upvotes - downvotes < 0 ? 'text-red-600' : 'text-[var(--color-text)]'}`}>
-            {upvotes - downvotes}
+          <span className={`text-base font-bold ${score > 0 ? 'text-emerald-600' : score < 0 ? 'text-red-500' : 'text-[var(--color-text)]'}`}>
+            {score}
           </span>
-          <span className="text-xs text-[var(--color-text-secondary)]" title={`${upvotes} likes, ${downvotes} dislikes`}>score</span>
           <button
-            onClick={(e) => handleVote(e, 'downvote')}
-            className={`p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 ${userVote === 'downvote' ? 'text-red-600' : 'text-gray-400 dark:text-gray-500 hover:text-red-600'} ${loading ? 'opacity-50' : ''}`}
+            onClick={(e) => {
+              if (userVote === 'downvote') {
+                handleVote(e, 'downvote');
+              } else {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowDownvoteModal(true);
+              }
+            }}
+            className={`p-2 rounded-xl transition-all ${
+              userVote === 'downvote' 
+                ? 'bg-red-500/10 text-red-500' 
+                : 'text-[var(--color-text-muted)] hover:bg-red-500/10 hover:text-red-500'
+            } ${loading ? 'opacity-50' : ''}`}
             disabled={loading}
-            title={`${downvotes} dislikes`}
+            title={`${downvotes} downvotes`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </button>
-          <span className={`font-semibold ${question.answerCount > 0 ? 'text-green-600' : 'text-[var(--color-text-secondary)]'}`}>
+          
+          <div className="w-full h-px bg-[var(--color-border)] my-1" />
+          
+          <span className={`text-sm font-semibold ${question.answerCount > 0 ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`}>
             {question.answerCount || 0}
           </span>
-          <span className="text-[var(--color-text-secondary)] text-xs">answers</span>
-          <span className="text-gray-400 dark:text-gray-500 text-xs">{question.viewCount || 0} views</span>
+          <span className="text-[10px] text-[var(--color-text-muted)] -mt-1">answers</span>
+          
           <button
             onClick={handleMeToo}
-            className={`p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 mt-1 ${hasMeToo ? 'text-blue-600' : 'text-gray-400 dark:text-gray-500 hover:text-blue-600'} ${meTooLoading ? 'opacity-50' : ''}`}
+            className={`p-2 rounded-xl transition-all mt-1 ${
+              hasMeToo 
+                ? 'bg-blue-500/10 text-blue-500' 
+                : 'text-[var(--color-text-muted)] hover:bg-blue-500/10 hover:text-blue-500'
+            } ${meTooLoading ? 'opacity-50' : ''}`}
             disabled={meTooLoading}
             title={`${meTooCount} students have the same doubt`}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </button>
-          <span className={`text-xs font-medium ${meTooCount > 0 ? 'text-blue-600' : 'text-[var(--color-text-secondary)]'}`}>
-            {meTooCount > 0 ? `${meTooCount}` : ''}
-          </span>
+          {meTooCount > 0 && (
+            <span className="text-xs font-semibold text-blue-500">{meTooCount}</span>
+          )}
         </div>
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1">
-            <Link href={`/questions/${question._id}`} className="hover:text-primary-600 transition-colors">
+          <h2 className="text-lg font-semibold text-[var(--color-text)] mb-2 group-hover:text-[var(--color-primary)] transition-colors">
+            <Link href={`/questions/${question._id}`}>
               {question.title}
             </Link>
           </h2>
-          <p className="text-sm text-[var(--color-text-secondary)] mb-3 line-clamp-2">
+          <p className="text-sm text-[var(--color-text-secondary)] mb-4 line-clamp-2 leading-relaxed">
             {truncate(question.body, 200)}
           </p>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 mb-3">
             {question.tagNames?.slice(0, 5).map(tag => (
               <Link
                 key={tag}
                 href={`/tags/${tag}`}
-                className="badge-primary text-xs hover:bg-primary-200 transition-colors"
+                className="badge-primary text-xs hover:opacity-80 transition-opacity"
               >
                 {tag}
               </Link>
             ))}
           </div>
-          <div className="mt-3 flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
+          <div className="flex items-center gap-3 text-xs text-[var(--color-text-muted)]">
             {question.author?._id === 'anonymous' ? (
-              <span className="flex items-center gap-1">
-                <span className="w-4 h-4 rounded-full bg-[var(--color-border)] text-[var(--color-text-secondary)] flex items-center justify-center text-[10px] font-medium">?</span>
-                <span>Anonymous Student</span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-5 h-5 rounded-full bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] flex items-center justify-center text-[10px] font-medium">?</span>
+                <span>Anonymous</span>
               </span>
             ) : (
-              <Link href={`/users/${question.author?.username}`} className="flex items-center gap-1 hover:text-primary-600">
+              <Link href={`/users/${question.author?.username}`} className="flex items-center gap-1.5 hover:text-[var(--color-primary)] transition-colors">
                 {question.author?.avatar ? (
-                  <img src={question.author?.avatar} alt="" className="w-4 h-4 rounded-full" />
+                  <img src={question.author?.avatar} alt="" className="w-5 h-5 rounded-full" />
                 ) : (
-                  <span className="w-4 h-4 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-[10px] font-medium">
+                  <span className="w-5 h-5 rounded-lg bg-gradient-to-br from-[var(--color-primary)] to-purple-500 text-white flex items-center justify-center text-[10px] font-bold">
                     {(question.author?.displayName || question.author?.username || '?')[0]}
                   </span>
                 )}
@@ -145,9 +182,16 @@ export default function QuestionCard({ question }) {
               </Link>
             )}
             <span>asked {formatDate(question.createdAt)}</span>
+            <span className="text-[var(--color-text-muted)]">{question.viewCount || 0} views</span>
           </div>
         </div>
       </div>
+      <DownvoteReasonModal
+        isOpen={showDownvoteModal}
+        onClose={() => setShowDownvoteModal(false)}
+        onSubmit={handleDownvoteWithReason}
+        targetType="Question"
+      />
     </div>
   );
 }

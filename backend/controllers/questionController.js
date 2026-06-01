@@ -8,6 +8,8 @@ const { indexQuestion, deleteQuestionIndex } = require('../services/searchServic
 const { emitToQuestion, emitToUser } = require('../socket');
 const { canDeleteQuestion, hasPermission, PERMISSIONS } = require('../utils/permissions');
 const Notification = require('../models/Notification');
+const { flagContent, clearFlag } = require('../services/moderationService');
+const FAQ = require('../models/FAQ');
 
 exports.createQuestion = async (req, res, next) => {
   try {
@@ -420,6 +422,9 @@ exports.verifyQuestion = async (req, res, next) => {
     const question = await Question.findById(req.params.id);
     if (!question) throw new AppError('Question not found', 404);
     if (!question.isFAQ) throw new AppError('Question is not a resolved FAQ', 400);
+    if (req.user.role !== 'admin' && req.user.role !== 'moderator') {
+      throw new AppError('Not authorized', 403);
+    }
 
     question.lastVerifiedAt = new Date();
     question.verifiedBy = req.user._id;
@@ -431,6 +436,24 @@ exports.verifyQuestion = async (req, res, next) => {
       .populate('verifiedBy', 'username displayName');
 
     res.json({ message: 'FAQ verified', question: populated });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.clearVerifyQuestion = async (req, res, next) => {
+  try {
+    const question = await Question.findById(req.params.id);
+    if (!question) throw new AppError('Question not found', 404);
+    if (req.user.role !== 'admin' && req.user.role !== 'moderator') {
+      throw new AppError('Not authorized', 403);
+    }
+
+    question.lastVerifiedAt = null;
+    question.verifiedBy = null;
+    await question.save();
+
+    res.json({ message: 'FAQ verification cleared', question });
   } catch (err) {
     next(err);
   }
@@ -732,6 +755,89 @@ exports.promoteToMasterFAQ = async (req, res, next) => {
   }
 };
 
+exports.addToFAQ = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin' && req.user.role !== 'moderator') {
+      throw new AppError('Only moderators can add questions to FAQs', 403);
+    }
+
+    const { faqId, answerId } = req.body;
+    if (!faqId) throw new AppError('FAQ ID is required', 400);
+
+    const question = await Question.findById(req.params.id);
+    if (!question) throw new AppError('Question not found', 404);
+
+    let answerBody = question.body;
+    if (answerId) {
+      const Answer = require('../models/Answer');
+      const answer = await Answer.findById(answerId);
+      if (!answer) throw new AppError('Answer not found', 404);
+      if (answer.question.toString() !== question._id.toString()) {
+        throw new AppError('Answer does not belong to this question', 400);
+      }
+      answerBody = answer.body;
+    }
+
+    const faq = await FAQ.findById(faqId);
+    if (!faq) throw new AppError('FAQ not found', 404);
+
+    faq.items.push({
+      question: question.title,
+      answer: answerBody,
+      tags: question.tagNames || [],
+      order: faq.items.length,
+    });
+    await faq.save();
+
+    res.json({ message: 'Added to FAQ', faq });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.removeFromFAQ = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin' && req.user.role !== 'moderator') {
+      throw new AppError('Only moderators can remove questions from FAQs', 403);
+    }
+
+    const { answerId } = req.body;
+
+    const question = await Question.findById(req.params.id);
+    if (!question) throw new AppError('Question not found', 404);
+
+    let removeContent = question.title;
+
+    if (answerId) {
+      const Answer = require('../models/Answer');
+      const answer = await Answer.findById(answerId);
+      if (answer && answer.question.toString() === question._id.toString()) {
+        removeContent = answer.body;
+      }
+    }
+
+    const faqs = await FAQ.find({ 'items.question': question.title });
+    for (const faq of faqs) {
+      faq.items = faq.items.filter(item => {
+        if (item.question !== question.title) return true;
+        if (answerId) {
+          return item.answer !== removeContent;
+        }
+        return item.answer !== removeContent && item.answer !== question.body;
+      });
+      if (faq.items.length === 0) {
+        await FAQ.findByIdAndDelete(faq._id);
+      } else {
+        await faq.save();
+      }
+    }
+
+    res.json({ message: 'Removed from FAQs' });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getMergedQuestions = async (req, res, next) => {
   try {
     const question = await Question.findById(req.params.id);
@@ -746,6 +852,39 @@ exports.getMergedQuestions = async (req, res, next) => {
       .populate('author', 'username displayName');
 
     res.json({ mergedQuestions });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const VALID_FLAG_REASONS = ['incorrect', 'incomplete', 'unclear', 'harmful', 'spam', 'other'];
+
+exports.flagQuestion = async (req, res, next) => {
+  try {
+    const { reason } = req.body;
+    if (!reason || !VALID_FLAG_REASONS.includes(reason)) {
+      return res.status(400).json({ error: 'Invalid flag reason', validReasons: VALID_FLAG_REASONS });
+    }
+
+    const question = await Question.findById(req.params.id);
+    if (!question || question.isDeleted) throw new AppError('Question not found', 404);
+
+    await flagContent({ targetType: 'Question', targetId: req.params.id, reason, flaggedBy: req.user._id });
+
+    res.json({ message: 'Question flagged', reason });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.clearFlagQuestion = async (req, res, next) => {
+  try {
+    const question = await Question.findById(req.params.id);
+    if (!question || question.isDeleted) throw new AppError('Question not found', 404);
+
+    await clearFlag({ targetType: 'Question', targetId: req.params.id });
+
+    res.json({ message: 'Question flag cleared' });
   } catch (err) {
     next(err);
   }

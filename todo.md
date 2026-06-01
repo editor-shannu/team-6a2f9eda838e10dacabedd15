@@ -1,26 +1,97 @@
-PrashnaSārathi
+# PrashnaSārathi — Feature Roadmap
 
 **Objective:** Every student should feel safe asking doubts, get answers fast, and feel their problem was genuinely solved.
 
 ---
 
-## Phase 1: Eliminate the Fear of Asking (Foundation)
+## Currently Implemented
 
-- [ ] ### 1. Anonymous Question Asking
+### Core Q&A
+- [x] Ask questions (title, body, tags, anonymous option)
+- [x] Answer questions (markdown, confidence levels)
+- [x] Voting (upvote/downvote on questions and answers)
+- [x] Accept answer (moderators/admins only, +15 rep)
+- [x] Me Too button (bump question priority, real-time updates)
+- [x] Solved My Doubt button (on answers, real-time updates)
+- [x] Confidence levels on answers (🤔 "I think so" / 👍 "Pretty sure" / 💯 "I know this")
+- [x] Duplicate detection on question creation
+- [x] Question escalation (no-response after 24h)
+- [x] Anonymous question asking
+- [x] Real-time updates via Socket.IO (new answers, me-too, solved counts)
+
+### FAQ System
+- [x] Browse FAQ pages by category
+- [x] FAQ detail with sidebar navigation
+- [x] Item-level Yes/No feedback
+- [x] Save/unsave FAQ pages
+- [x] Official badges, categories, tags
+
+### Search & Discovery
+- [x] Full-text search across questions, FAQs, users
+- [x] SearchModal (Ctrl+K or /)
+- [x] Trending searches (Redis)
+- [x] Search result caching (Redis 60s)
+- [x] Tag browsing and filtering
+- [x] Sort options (newest, active, votes, views, etc.)
+
+### User System
+- [x] Registration / Login / Logout
+- [x] JWT-based authentication
+- [x] User profiles (avatar, bio, reputation, badges)
+- [x] Saved questions with notes and custom tags
+- [x] Saved FAQs with notes and custom tags
+- [x] Notification system (new answer, answer accepted, upvotes, etc.)
+- [x] Role system (user, moderator, admin)
+- [x] Ban/unban users (admin)
+
+### Admin / Moderation
+- [x] Admin dashboard with stats
+- [x] User management (role, ban)
+- [x] Flagged content view
+- [x] Delete questions/answers
+- [x] Verify / Mark outdated FAQ questions
+- [x] Accept answer on any question
+
+### UI/UX
+- [x] Dark mode toggle (localStorage, system preference)
+- [x] Student onboarding walkthrough (4-step modal)
+- [x] Keyboard shortcuts (j/k navigation, / search, Esc close)
+- [x] Responsive mobile layout
+- [x] Rich text editor (TipTap)
+- [x] Markdown rendering (GFM)
+- [x] Confetti celebration on answer accepted
+- [x] View count tracking
+- [x] SEO structured data (JSON-LD)
+
+### Infrastructure
+- [x] Docker/Podman deployment
+- [x] Nginx reverse proxy
+- [x] Elasticsearch full-text search
+- [x] Redis caching (search results, trending)
+- [x] Kafka events (optional)
+- [x] Seed data integrity check
+
+---
+
+## Planned Features
+
+### Phase 1: Eliminate the Fear of Asking (Foundation)
+
+- [x] ### 1. Anonymous Question Asking
   - Toggle "Ask anonymously" when posting a question
   - Question author shows as "Anonymous Student" instead of username
   - The author can still see & interact with their own question (they're authenticated)
   - Author's identity is visible to moderators/admins only
   - *Why:* Many students hesitate to ask "dumb" questions publicly. This removes that barrier completely.
 
-- [ ] ### 2. "I Have the Same Doubt" (+1 / Me Too) Button
+- [x] ### 2. "I Have the Same Doubt" (+1 / Me Too) Button — **IMPLEMENTED**
   - A button on every question: "Me Too (X students)"
   - Instead of asking the same question again, students just click this
   - Question gets bumped in priority when it has many "Me Too"s
   - When an answer is accepted, all "Me Too" students get a notification
   - *Why:* Eliminates duplicate questions and shows students they're not alone in their doubt
 
-- [ ] ### 3. "Solved My Doubt" Button (Distinct from Upvote)
+- [x] ### 3. "Solved My Doubt" Button (Distinct from Upvote) — **IMPLEMENTED**
   - Each answer gets a "Solved My Doubt" button
   - Track `solvedMyDoubtCount` separately from upvotes
   - Answers with many "solved" markers get a special badge
@@ -40,11 +111,11 @@ PrashnaSārathi
   - Quick stats: "You've asked X doubts, Y solved, Z unanswered"
   - *Why:* Students currently have no way to see the status of their doubts at a glance
 
-- [ ] ### 5. Answer Confidence Badge
+- [x] ### 5. Answer Confidence Badge — **IMPLEMENTED**
   - When answering, the student picks a confidence level:
-    - ` I think so` (low confidence)
-    - `Pretty sure` (medium)
-    - `I know this` (high/verified)
+    - `🤔 I think so` (low confidence)
+    - `👍 Pretty sure` (medium)
+    - `💯 I know this` (high/verified)
   - Displayed prominently on the answer card
   - Helps questioners gauge how much to trust an answer
   - *Why:* An answer from a fellow student might be wrong — confidence signaling helps
@@ -64,7 +135,7 @@ PrashnaSārathi
   - Badge shown next to the username on answers
   - *Why:* Recognizes peer-to-peer help and builds trust in answers
 
-- [ ] ### 8. Doubt Resolved Celebration
+- [x] ### 8. Doubt Resolved Celebration — **IMPLEMENTED**
   - When a student marks an answer as "Solved My Doubt" or accepts an answer:
     - A small confetti animation (CSS only, no library needed)
     - A toast: "Your doubt has been solved by [username]!"
@@ -81,7 +152,7 @@ PrashnaSārathi
 
 ## Phase 4: Advanced Experience
 
-- [ ] ### 10. Student Onboarding Walkthrough
+- [x] ### 10. Student Onboarding Walkthrough — **IMPLEMENTED**
   - On first visit (detected by `localStorage` flag or `firstLogin`):
     - Step 1: "Welcome to PrashnaSārathi! Your doubts are welcome here."
     - Step 2: "Browse FAQs for common questions" → point to /faqs
@@ -89,7 +160,7 @@ PrashnaSārathi
     - Step 4: "Ask your first question — anonymously if you prefer"
   - *Why:* New students don't know where to start — this guides them
 
-- [ ] ### 11. Dark Mode
+- [x] ### 11. Dark Mode — **IMPLEMENTED**
   - Toggle in navbar or user preferences
   - CSS variables for light/dark themes
   - Persists choice in `localStorage` and user profile
@@ -128,23 +199,97 @@ PrashnaSārathi
 
 ---
 
-## Recommended Implementation Order
+## Implementation Status Summary
 
 | Done? | # | Feature | Phase | Effort | Impact |
 |-------|---|---------|-------|--------|--------|
-|  | 1 | Anonymous Asking | 1 | 2 days | High |
-|  | 2 | "Me Too" Button | 1 | 2 days | High |
-|  | 3 | "Solved My Doubt" Button | 1 | 2 days | Very High |
-|  | 4 | Doubt Resolution Dashboard | 2 | 3 days | Very High |
-|  | 5 | Answer Confidence Badge | 2 | 1 day | Medium |
-|  | 6 | Similar Solved Doubts Sidebar | 2 | 1 day | Medium |
-|  | 7 | Top Contributor Badges | 3 | 2 days | Medium |
-|  | 8 | Doubt Resolved Celebration | 3 | 1 day | High |
-|  | 9 | "This Helped Me" Button | 3 | 1 day | Medium |
-|  | 10 | Onboarding Walkthrough | 4 | 2 days | High |
-|  | 11 | Dark Mode | 4 | 2 days | Medium |
-|  | 12 | Related Learning Resources | 4 | 2 days | Low-Medium |
-|  | 13 | Threaded Follow-up Discussions | 5 | 3-5 days | Medium |
-|  | 14 | Weekly Doubt Digest | 5 | 3-5 days | Medium |
-|  | 15 | Request Answer from Contributor | 5 | 3-5 days | Medium |
-|  | 16 | PWA / Install Prompt | 5 | 3-5 days | Medium |
+| DONE | 1 | Anonymous Asking | 1 | done | High |
+| DONE | 2 | "Me Too" Button | 1 | done | High |
+| DONE | 3 | "Solved My Doubt" Button | 1 | done | Very High |
+| | 4 | Doubt Resolution Dashboard | 2 | 3 days | Very High |
+| DONE | 5 | Answer Confidence Badge | 2 | done | Medium |
+| | 6 | Similar Solved Doubts Sidebar | 2 | 1 day | Medium |
+| | 7 | Top Contributor Badges | 3 | 2 days | Medium |
+| DONE | 8 | Doubt Resolved Celebration | 3 | done | High |
+| | 9 | "This Helped Me" Button | 3 | 1 day | Medium |
+| DONE | 10 | Onboarding Walkthrough | 4 | done | High |
+| DONE | 11 | Dark Mode | 4 | done | Medium |
+| | 12 | Related Learning Resources | 4 | 2 days | Low-Medium |
+| | 13 | Threaded Follow-up Discussions | 5 | 3-5 days | Medium |
+| | 14 | Weekly Doubt Digest | 5 | 3-5 days | Medium |
+| | 15 | Request Answer from Contributor | 5 | 3-5 days | Medium |
+| | 16 | PWA / Install Prompt | 5 | 3-5 days | Medium |
+
+**Completed: 8/16 features**
+
+1. Question Draft Auto-Save
+- Auto-save draft as student types (every 30s to localStorage)
+- Restore draft if they accidentally close tab or navigate away
+- Show "Draft saved" indicator while composing
+2. Following Questions (beyond accepted answer)
+- Follow a question → get notified of ALL new answers, not just accepted
+- "Following" toggle on question detail page
+- Email digest option for followed questions
+3. Anonymous Encouragement / Thank You
+- Send a private "this helped me" to an answerer without displaying publicly on the answer
+- Creates positive reinforcement without cluttering the UI
+- Distinct from public "This Helped Me" button
+4. Question Bounty System
+- Student can attach "bounty" points (from their reputation) to attract answers
+- Featured at top of question list
+- Expires after X days, auto-awarded to best answer
+5. Professor/Instructor Verification Badge
+- Moderators can mark users as "verified instructor"
+- Special badge displayed next to name on answers
+- Helps students trust the answer source
+- [x] 6. Downvote Feedback (required)
+  - When a question/answer gets a downvote, prompt the downvoter to optionally leave a reason
+  - 6 predefined reasons (incorrect, incomplete, unclear, harmful, spam, other)
+  - Free-text field for elaboration
+  - Reason shown anonymously to the post author to help them improve
+7. Quick Reaction Emojis on Answers
+- Beyond upvote/downvote: 😂 funny, 🙏 helpful, ❓ unclear
+- Aggregated as small icon counts below the answer
+- Low-friction feedback signal
+8. Search Filter Chips
+- Filter questions by: unanswered, has code, recent, unanswered + no response in 24h
+- "Help my question" filter = no answers + older than 24h
+- One-click filter buttons above question list
+Medium-Impact Quality of Life
+9. Edit History on Questions/Answers
+- See who edited when and what changed
+- Helps transparency, reduces "my answer was changed" confusion
+10. Mobile Bottom Navigation Bar
+- Bottom tabs: Home, Questions, Ask, Notifications, Profile
+- Standard mobile app pattern — avoids reaching for top navbar
+- Better thumb-zone navigation
+11. Code Syntax Highlighting
+- Dedicated code block rendering with language detection
+- Line numbers, copy button, dark/light theme toggle within code blocks
+- Most student questions involve code
+12. Question Difficulty Tags
+- Easy / Medium / Hard tags on questions
+- Helps other students gauge complexity, helps answerers know audience level
+13. Streak / Daily Login Gamification
+- Track consecutive days of visiting/asking/answering
+- Weekly streak badge on profile
+- Motivates habitual engagement without reputation pressure
+14. Voice-to-Text for Asking
+- Microphone button in question form
+- Useful for students who type slowly or prefer speaking
+- Especially helpful on mobile
+15. Share to Groups / Friends
+- Share a specific question/answer via link
+- Copy link with anchor to specific answer
+- Share to WhatsApp/Telegram directly from UI
+16. Personal Stats Dashboard
+- "This week: you asked 2 questions, got 5 answers, helped 3 students"
+- "Your top answered tags: Python (7), React (4)"
+- Motivates continued participation
+17. Related Documentation Links
+- When posting a question, auto-suggest relevant MDN/w3schools/official docs links based on tags
+- Helps students self-resolve before asking
+18. "No Answer Yet" Escalation Auto-Prompt
+- Questions with no answers for 48h get a gentle prompt to the author
+- "Still looking for an answer? Consider adding more details or simplifying your question"
+- Optional re-tag or bounty suggestion

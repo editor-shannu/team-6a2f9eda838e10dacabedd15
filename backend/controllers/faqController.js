@@ -2,7 +2,7 @@ const { validationResult } = require('express-validator');
 const FAQ = require('../models/FAQ');
 const { AppError } = require('../middleware/errorHandler');
 const { paginate, buildPaginationMeta, generateSlug } = require('../utils/helpers');
-const { indexFAQ, deleteFAQIndex } = require('../services/searchService');
+const { indexFAQ, indexFAQItem, deleteFAQIndex, deleteFAQItemIndex } = require('../services/searchService');
 
 exports.createFAQ = async (req, res, next) => {
   try {
@@ -58,7 +58,7 @@ exports.getFAQs = async (req, res, next) => {
         .sort(sort)
         .skip(skip)
         .limit(limit)
-        .select('title slug description category icon tags viewCount saveCount isOfficial createdAt items.isPublished items.question')
+        .select('title slug description category icon tags viewCount saveCount isOfficial createdAt items')
         .populate('author', 'username displayName'),
       FAQ.countDocuments(filter),
     ]);
@@ -82,6 +82,14 @@ exports.getFAQBySlug = async (req, res, next) => {
 
     if (!faq) throw new AppError('FAQ not found', 404);
     await FAQ.findByIdAndUpdate(faq._id, { $inc: { viewCount: 1 } });
+
+    const userId = req.user?._id;
+    if (userId) {
+      faq.items.forEach(item => {
+        const userVote = item.userFeedback.find(f => f.user.toString() === userId.toString());
+        item.userVote = userVote ? (userVote.helpful ? 'helpful' : 'notHelpful') : null;
+      });
+    }
 
     res.json({ faq });
   } catch (err) {
@@ -136,6 +144,8 @@ exports.addFAQItem = async (req, res, next) => {
       order: faq.items.length,
     });
     await faq.save();
+    const newItem = faq.items[faq.items.length - 1];
+    await indexFAQItem(faq, newItem);
     res.status(201).json({ faq });
   } catch (err) {
     next(err);
@@ -159,6 +169,7 @@ exports.updateFAQItem = async (req, res, next) => {
     item.reviewedBy = req.user._id;
 
     await faq.save();
+    await indexFAQItem(faq, item);
     res.json({ faq });
   } catch (err) {
     next(err);
@@ -171,6 +182,7 @@ exports.deleteFAQItem = async (req, res, next) => {
     if (!faq) throw new AppError('FAQ not found', 404);
     faq.items.pull({ _id: req.params.itemId });
     await faq.save();
+    await deleteFAQItemIndex(req.params.id, req.params.itemId);
     res.json({ faq });
   } catch (err) {
     next(err);
@@ -179,18 +191,48 @@ exports.deleteFAQItem = async (req, res, next) => {
 
 exports.markFAQHelpful = async (req, res, next) => {
   try {
-    const { helpful } = req.body;
+    const { helpful, undo } = req.body;
     const faq = await FAQ.findById(req.params.id);
     if (!faq) throw new AppError('FAQ not found', 404);
 
     const item = faq.items.id(req.params.itemId);
     if (!item) throw new AppError('FAQ item not found', 404);
 
-    if (helpful) item.helpfulCount += 1;
-    else item.notHelpfulCount += 1;
+    const userId = req.user._id;
+    const existingFeedback = item.userFeedback.find(f => f.user.toString() === userId.toString());
+
+    if (undo && existingFeedback) {
+      if (existingFeedback.helpful) {
+        item.helpfulCount = Math.max(0, item.helpfulCount - 1);
+      } else {
+        item.notHelpfulCount = Math.max(0, item.notHelpfulCount - 1);
+      }
+      item.userFeedback = item.userFeedback.filter(f => f.user.toString() !== userId.toString());
+      await faq.save();
+      return res.json({ message: 'Vote removed', helpfulCount: item.helpfulCount, notHelpfulCount: item.notHelpfulCount, voted: null });
+    }
+
+    if (existingFeedback) {
+      if (existingFeedback.helpful === helpful) {
+        return res.status(400).json({ message: 'You have already voted on this item', voted: helpful ? 'helpful' : 'notHelpful' });
+      }
+      if (existingFeedback.helpful) {
+        item.helpfulCount -= 1;
+        item.notHelpfulCount += 1;
+      } else {
+        item.notHelpfulCount -= 1;
+        item.helpfulCount += 1;
+      }
+      existingFeedback.helpful = helpful;
+      existingFeedback.votedAt = new Date();
+    } else {
+      if (helpful) item.helpfulCount += 1;
+      else item.notHelpfulCount += 1;
+      item.userFeedback.push({ user: userId, helpful });
+    }
 
     await faq.save();
-    res.json({ message: 'Feedback recorded' });
+    res.json({ message: 'Feedback recorded', helpfulCount: item.helpfulCount, notHelpfulCount: item.notHelpfulCount, voted: helpful ? 'helpful' : 'notHelpful' });
   } catch (err) {
     next(err);
   }

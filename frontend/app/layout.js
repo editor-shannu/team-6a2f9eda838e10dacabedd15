@@ -5,6 +5,8 @@ import { KeyboardProvider } from '@/context/KeyboardContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import OnboardingModal from '@/components/OnboardingModal';
+import DotField from '@/components/DotField';
 import { Toaster } from 'react-hot-toast';
 
 export const metadata = {
@@ -18,14 +20,24 @@ export default function RootLayout({ children }) {
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="min-h-screen flex flex-col font-mono">
+        <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+          <DotField
+            dotRadius={2.5}
+            dotSpacing={16}
+            bulgeStrength={67}
+            sparkle={false}
+            waveAmplitude={0}
+          />
+        </div>
         <AuthProvider>
           <SocketProvider>
             <KeyboardProvider>
               <ThemeProvider>
                 <Navbar />
+                <OnboardingModal />
                 <main className="flex-1">
                   {children}
                 </main>
