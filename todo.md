@@ -320,7 +320,17 @@ Medium-Impact Quality of Life
 
 #### Latest Fixes (June 4, 2026)
 
-1. **Admin Panel - Unban, Unsuspend, Unblock, and Un-Shadowban Controls**
+1. **Optimized SpamGuard Rate Limiting & User Trust Levels**
+   * *Bug*: Question/answer posting rate limits were too restrictive (e.g. 3 posts/day for new users), and the `retryAfter` calculation used a naive `findOne` query that failed to account for full post history. Deleted posts were also counted, and the 60s cooldown delayed E2E tests.
+   * *Resolution*:
+     1. Replaced the `findOne` queries in `spamGuard.js` with `find` (projecting `createdAt`) to query the full post history within the last 24h and 10m.
+     2. Refined `retryAfter` calculations to target the precise index (`posts.length - dailyLimit`) where the limit will drop, ensuring mathematical correctness.
+     3. Scaled up rate limits for trust levels: `new` (10/day, 5/10min), `regular` (30/day, 15/10min), `trusted` (100/day, 50/10min), and applied the 10-minute limit dynamically.
+     4. Filtered out deleted posts (`isDeleted: false`) from the rate limit counts.
+     5. Bypassed cooldown requirements in development mode to unblock E2E tests, and imported `User` in `questionController.js` to fix a reference error.
+     6. Lowered AI noise classification threshold to `0.50` in FastAPI `main.py` to prevent false positive spam rejections on short, legitimate questions.
+
+2. **Admin Panel - Unban, Unsuspend, Unblock, and Un-Shadowban Controls**
    * *Bug*: When an admin suspended, blocked, or shadow banned a user, their posts remained visible or stayed hidden with no option/buttons on the admin page to lift restrictions and restore user status or content visibility.
    * *Resolution*:
      1. Updated `moderationService.js` so that banning a user updates their status to `blocked` and automatically hides all their questions and answers (`visibility: 'hidden'`).
