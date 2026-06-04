@@ -106,6 +106,11 @@ const spamGuard = async (req, res, next) => {
     const user = req.user;
     if (!user) return next();
 
+    // Admins and moderators bypass all automated spam guard checks
+    if (user.role === 'admin' || user.role === 'moderator') {
+      return next();
+    }
+
     const isQuestion = req.body.title !== undefined;
     const title = req.body.title || '';
     const body = req.body.body || '';
