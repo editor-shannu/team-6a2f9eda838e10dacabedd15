@@ -10,6 +10,7 @@ const { canDeleteQuestion, hasPermission, PERMISSIONS } = require('../utils/perm
 const Notification = require('../models/Notification');
 const { flagContent, clearFlag } = require('../services/moderationService');
 const FAQ = require('../models/FAQ');
+const User = require('../models/User');
 
 exports.createQuestion = async (req, res, next) => {
   try {
