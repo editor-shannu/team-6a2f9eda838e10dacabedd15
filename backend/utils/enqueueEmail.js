@@ -59,6 +59,15 @@ async function enqueueEmail({ to, userName, subject, body, contentTitle }) {
     });
     
     console.log(`[Enqueue] Email to ${targetEmail} enqueued successfully.`);
+
+    // Process queue immediately so emails are sent without waiting for cron (essential for Vercel/serverless)
+    try {
+      const { processEmailQueue } = require('../services/emailWorker');
+      processEmailQueue().catch(err => console.error('[Enqueue] Email worker run failed:', err.message));
+    } catch (workerErr) {
+      console.error('[Enqueue] Could not start email worker:', workerErr.message);
+    }
+    
     return emailJob;
   } catch (err) {
     console.error('[Enqueue] Error enqueuing email:', err.message);

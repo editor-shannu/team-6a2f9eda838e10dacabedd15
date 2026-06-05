@@ -314,3 +314,17 @@ exports.googleLogin = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.acceptTerms = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      throw new AppError('User not found', 404);
+    }
+    user.hasAcceptedTerms = true;
+    await user.save();
+    res.json({ success: true, user: user.toPublicJSON() });
+  } catch (err) {
+    next(err);
+  }
+};

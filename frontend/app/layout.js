@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import OnboardingModal from '@/components/OnboardingModal';
+import TermsAndConditionsModal from '@/components/TermsAndConditionsModal';
 import ReportIssueButton from '@/components/ReportIssueButton';
 import NetworkStatus from '@/components/NetworkStatus';
 import DotField from '@/components/DotField';
@@ -41,6 +42,7 @@ export default function RootLayout({ children }) {
               <KeyboardProvider>
                 <ThemeProvider>
                   <Navbar />
+                  <TermsAndConditionsModal />
                   <OnboardingModal />
                   <ReportIssueButton />
                   <NetworkStatus />

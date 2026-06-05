@@ -68,6 +68,7 @@ const userSchema = new mongoose.Schema({
 
   // Onboarding
   hasCompletedOnboarding: { type: Boolean, default: false },
+  hasAcceptedTerms: { type: Boolean, default: false },
   currentPhase: {
     type: String,
     enum: ['pre', 'phase1_coursework', 'phase1_completed', 'phase2_project', 'completed']
@@ -138,6 +139,7 @@ userSchema.methods.toPublicJSON = function () {
     questionCount: this.questionCount,
     answerCount: this.answerCount,
     hasCompletedOnboarding: this.hasCompletedOnboarding,
+    hasAcceptedTerms: this.hasAcceptedTerms || false,
     currentPhase: this.currentPhase,
     authProvider: this.authProvider,
     trustScore: this.trustScore,

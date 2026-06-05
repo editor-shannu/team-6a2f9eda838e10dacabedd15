@@ -38,6 +38,28 @@ export default function AdminPage() {
   const [emailPagination, setEmailPagination] = useState({ page: 1, pages: 1 });
   const [bounces, setBounces] = useState([]);
 
+  // Broadcast Alert States
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [broadcasting, setBroadcasting] = useState(false);
+
+  const handleSendBroadcastAlert = async (e) => {
+    e.preventDefault();
+    if (!broadcastMessage.trim()) {
+      toast.error('Please enter a message');
+      return;
+    }
+    setBroadcasting(true);
+    try {
+      await api.post('/admin/alert', { message: broadcastMessage });
+      toast.success('Admin alert broadcasted successfully!');
+      setBroadcastMessage('');
+    } catch (err) {
+      toast.error(err.message || 'Failed to send broadcast alert');
+    } finally {
+      setBroadcasting(false);
+    }
+  };
+
   useEffect(() => {
     if (!user || (user.role !== 'admin' && user.role !== 'moderator')) {
       router.push('/');
@@ -388,7 +410,7 @@ export default function AdminPage() {
     tabs.push('moderationQueue', 'reportedPosts', 'suspiciousActivities', 'auditLogs');
   }
   if (user?.role === 'admin') {
-    tabs.push('siteReports', 'emails');
+    tabs.push('siteReports', 'emails', 'broadcast');
   }
   if (user?.role !== 'admin') {
     const uIdx = tabs.indexOf('users');
@@ -417,6 +439,7 @@ export default function AdminPage() {
              t === 'auditLogs' ? 'Audit Logs' :
              t === 'siteReports' ? 'Site Reports' :
              t === 'emails' ? 'Email Queue' :
+             t === 'broadcast' ? 'Broadcast Alerts' :
              t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
         ))}
@@ -1409,6 +1432,37 @@ export default function AdminPage() {
               </div>
             </div>
           </div>
+        </div>
+      ) : tab === 'broadcast' && user?.role === 'admin' ? (
+        <div className="card p-6 max-w-2xl mx-auto border border-[var(--color-border)] rounded-2xl shadow-xl bg-[var(--color-bg-secondary)]">
+          <h2 className="text-xl font-bold text-[var(--color-text)] mb-4 flex items-center gap-2">
+            <span>🚨</span> Broadcast Real-time Alert
+          </h2>
+          <p className="text-sm text-[var(--color-text-secondary)] mb-6 leading-relaxed">
+            Send an instant notification alert to all active users on the platform. The alert will pop up on their screen immediately if they are online, and will also be saved in their notification inbox.
+          </p>
+          <form onSubmit={handleSendBroadcastAlert} className="space-y-5">
+            <div>
+              <label className="block text-sm font-semibold text-[var(--color-text)] mb-2">
+                Alert Message
+              </label>
+              <textarea
+                value={broadcastMessage}
+                onChange={(e) => setBroadcastMessage(e.target.value)}
+                placeholder="Type the message to broadcast..."
+                rows={4}
+                required
+                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-4 text-sm text-[var(--color-text)] focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={broadcasting || !broadcastMessage.trim()}
+              className="w-full btn-primary py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2 disabled:opacity-50 transition-all duration-200"
+            >
+              {broadcasting ? 'Broadcasting...' : 'Broadcast Alert Now'}
+            </button>
+          </form>
         </div>
       ) : null}
     </div>

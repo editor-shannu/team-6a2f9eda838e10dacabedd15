@@ -46,10 +46,50 @@ export function NotificationProvider({ children }) {
       }
     };
 
+    const handleAdminAlert = (data) => {
+      toast((t) => (
+        <div className="flex flex-col gap-2 p-1 text-left">
+          <div className="font-bold text-red-600 dark:text-red-400 flex items-center gap-1.5 text-sm">
+            <span>🚨</span> SYSTEM ALERT
+          </div>
+          <div className="text-sm text-[var(--color-text)] leading-relaxed">
+            {data.message}
+          </div>
+          <button 
+            onClick={() => toast.dismiss(t.id)} 
+            className="mt-2 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold self-end transition-all shadow-sm"
+          >
+            Dismiss
+          </button>
+        </div>
+      ), {
+        duration: Infinity,
+        position: 'top-center',
+        style: {
+          border: '1px solid var(--color-border)',
+          background: 'var(--color-bg-secondary)',
+          color: 'var(--color-text)',
+          minWidth: '320px',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        }
+      });
+
+      setUnreadCount(prev => prev + 1);
+      
+      if (browserPermission === 'granted') {
+        showBrowserNotification({
+          title: 'System Alert',
+          message: data.message
+        });
+      }
+    };
+
     socket.on('notification:new', handleNotification);
+    socket.on('admin:alert', handleAdminAlert);
 
     return () => {
       socket.off('notification:new', handleNotification);
+      socket.off('admin:alert', handleAdminAlert);
     };
   }, [user, socket, browserPermission]);
 

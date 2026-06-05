@@ -962,5 +962,56 @@ exports.removeBouncedEmail = async (req, res, next) => {
   }
 };
 
+exports.sendAdminAlert = async (req, res, next) => {
+  try {
+    const { message } = req.body;
+    if (!message) {
+      throw new AppError('Message is required', 400);
+    }
+
+    const User = require('../models/User');
+    const Notification = require('../models/Notification');
+    const { broadcastAlert } = require('../socket');
+
+    // 1. Get all active, non-banned users
+    const users = await User.find({ isBanned: false }).select('_id');
+    
+    // 2. Create system notifications in batch
+    if (users.length > 0) {
+      const notificationsToInsert = users.map(user => ({
+        recipient: user._id,
+        type: 'system',
+        title: 'Admin Alert',
+        message: message,
+        isRead: false,
+      }));
+      await Notification.insertMany(notificationsToInsert);
+    }
+
+    // 3. Broadcast real-time alert to all connected sockets
+    try {
+      broadcastAlert('admin:alert', {
+        title: 'Admin Alert',
+        message,
+        createdAt: new Date()
+      });
+    } catch (socketErr) {
+      console.error('Socket broadcast failed for admin alert:', socketErr.message);
+    }
+
+    // 4. Also audit log this action
+    const AuditLog = require('../models/AuditLog');
+    await AuditLog.create({
+      adminId: req.user._id,
+      action: 'send_admin_alert',
+      reason: `Broadcasted alert: "${message}"`
+    });
+
+    res.json({ success: true, message: 'Admin alert broadcasted successfully' });
+  } catch (err) {
+    next(err);
+  }
+};
+
 
 

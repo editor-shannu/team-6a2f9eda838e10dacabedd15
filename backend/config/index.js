@@ -38,6 +38,10 @@ const config = {
     apiKey: cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_API_KEY),
     serviceAccount: cleanEnv(process.env.FIREBASE_SERVICE_ACCOUNT),
   },
+  smtp: {
+    user: cleanEnv(process.env.GMAIL_USER) || cleanEnv(process.env.SMTP_USER) || 'faqportal.in@gmail.com',
+    pass: cleanEnv(process.env.GMAIL_APP_PASSWORD) || cleanEnv(process.env.SMTP_PASS) || 'your_app_password_here',
+  },
 };
 
 module.exports = config;
