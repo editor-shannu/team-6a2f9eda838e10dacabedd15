@@ -1,5 +1,6 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { toast } from 'react-hot-toast';
 
 export default function NetworkStatus() {
   const [status, setStatus] = useState('good'); // 'good' | 'slow' | 'offline'
@@ -72,6 +73,38 @@ export default function NetworkStatus() {
       clearInterval(interval);
     };
   }, []);
+
+  const isFirstLoad = useRef(true);
+
+  useEffect(() => {
+    if (isFirstLoad.current) {
+      isFirstLoad.current = false;
+      return;
+    }
+
+    if (status === 'offline') {
+      toast.error('You are offline. Serving cached FAQ and Questions data.', {
+        id: 'network-status-toast',
+        duration: 4000,
+        position: 'top-right',
+        icon: '🔌'
+      });
+    } else if (status === 'slow') {
+      toast.error('Network connection is slow. Performance may be degraded.', {
+        id: 'network-status-toast',
+        duration: 4000,
+        position: 'top-right',
+        icon: '⚠️'
+      });
+    } else if (status === 'good') {
+      toast.success('Back online! Live synchronization restored.', {
+        id: 'network-status-toast',
+        duration: 3500,
+        position: 'top-right',
+        icon: '⚡'
+      });
+    }
+  }, [status]);
 
   if (status === 'good') return null;
 
