@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell } = require('electron');
+const { app, BrowserWindow, shell, session } = require('electron');
 const path = require('path');
 
 function createWindow() {
@@ -17,17 +17,24 @@ function createWindow() {
   // Load the production web application
   mainWindow.loadURL('https://prashnasarathi.vercel.app');
 
-  // Open external links in system browser
+  // Open external links in system browser, allow oauth popups inside electron
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (!url.startsWith('https://prashnasarathi.vercel.app')) {
-      shell.openExternal(url);
-      return { action: 'deny' };
+    const isOAuth = url.includes('firebaseapp.com') || 
+                    url.includes('google.com') || 
+                    url.includes('googleapis.com') || 
+                    url.includes('prashnasarathi.vercel.app');
+    if (isOAuth) {
+      return { action: 'allow' };
     }
-    return { action: 'allow' };
+    shell.openExternal(url);
+    return { action: 'deny' };
   });
 }
 
 app.whenReady().then(() => {
+  // Set User-Agent globally to standard Chrome to bypass Google OAuth disallowed webview restrictions
+  session.defaultSession.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+
   createWindow();
 
   app.on('activate', () => {
