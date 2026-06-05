@@ -3,12 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 
 export default function NetworkStatus() {
-  const [status, setStatus] = useState(() => {
-    if (typeof window !== 'undefined' && !navigator.onLine) {
-      return 'offline';
-    }
-    return 'good';
-  });
+  const [status, setStatus] = useState('good');
 
   useEffect(() => {
     const checkNetwork = () => {
