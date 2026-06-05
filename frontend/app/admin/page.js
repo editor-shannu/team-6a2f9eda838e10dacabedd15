@@ -7,7 +7,7 @@ import { formatDate } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { useSocket } from '@/context/SocketContext';
 export default function AdminPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [tab, setTab] = useState('dashboard');
   const [stats, setStats] = useState(null);
@@ -61,6 +61,7 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user || (user.role !== 'admin' && user.role !== 'moderator')) {
       router.push('/');
       return;
@@ -98,7 +99,7 @@ export default function AdminPage() {
     };
 
     loadData();
-  }, [user, tab]);
+  }, [user, tab, authLoading]);
 
   useEffect(() => {
     if (!socket) return;
@@ -415,6 +416,15 @@ export default function AdminPage() {
   if (user?.role !== 'admin') {
     const uIdx = tabs.indexOf('users');
     if (uIdx > -1) tabs.splice(uIdx, 1);
+  }
+  if (authLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-pulse space-y-6">
+        <div className="h-8 bg-[var(--color-border)] rounded w-1/4" />
+        <div className="h-4 bg-[var(--color-border)] rounded w-1/2" />
+        <div className="h-64 bg-[var(--color-border)] rounded-md w-full" />
+      </div>
+    );
   }
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
