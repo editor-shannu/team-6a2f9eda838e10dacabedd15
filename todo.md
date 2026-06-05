@@ -554,6 +554,14 @@ Medium-Impact Quality of Life
       * Configured essential Capacitor plugins including `SplashScreen`, `PushNotifications`, `Camera` (for profile pictures), `App` (for deep linking), and file uploads.
       * Documented native integration setup instructions, required npm packages, build commands, and `AndroidManifest.xml` permissions/intent-filter configurations in a detailed walkthrough.
 
+12. **Multi-Platform Download Center, Update Checker, and Tauri Windows Desktop App**
+    * *Resolution*:
+      * Created a dedicated `tauri-app/` directory containing Tauri v1 configs, a Cargo.toml Rust dependencies definition, and a build script to package the web shell into a native Windows executable (`.exe`).
+      * Configured Tauri window attributes, file access permissions, and auto-updater endpoints.
+      * Created a dynamic `GET /api/app-version` backend API endpoint returning version metadata, changelog, and APK/installer links.
+      * Built an `AppUpdateChecker` client component mounted in `PwaProvider` that checks the backend version from the Capacitor wrapper, comparing versionCode to trigger update modals or lockouts (`forceUpdate: true`).
+      * Built a beautiful `/downloads` Download Center containing installation cards for PWA, Android (APK), Windows (.exe), and macOS (.dmg), linking it in the Footer.
+
 
 
 
