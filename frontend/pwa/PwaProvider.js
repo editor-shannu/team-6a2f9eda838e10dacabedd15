@@ -15,6 +15,8 @@ export default function PwaProvider({ children }) {
           const href = link.getAttribute('href');
           if (href && (href.startsWith('/') || href.startsWith(window.location.origin)) && !href.includes('#')) {
             e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
             console.log('[PWA] Offline navigation detected. Forcing hard load for:', href);
             window.location.href = href;
           }
