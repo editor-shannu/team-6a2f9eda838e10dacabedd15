@@ -158,20 +158,20 @@ export default function DownloadCenter() {
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-[var(--color-text)]">Windows Application</h2>
-                  <p className="text-xs text-[var(--color-text-secondary)]">Desktop Executable (.exe)</p>
+                  <p className="text-xs text-[var(--color-text-secondary)]">Desktop Package (.7z)</p>
                 </div>
               </div>
               <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
-                Native Windows client for laptop and desktop users. Stays pinned in system trays with keyboard shortcut triggers.
+                Native Windows client for laptop and desktop users. Simply download, extract, and launch PrashnaSārathi.exe.
               </p>
             </div>
             <div className="mt-6">
               <a
-                href="/downloads/prashnasarathi-win.exe"
+                href="/downloads/prashnasarathi-win.7z"
                 download
                 className="w-full py-2.5 text-xs font-semibold text-white bg-indigo-500 hover:bg-indigo-600 rounded-xl transition-all shadow-md shadow-indigo-500/10 cursor-pointer flex items-center justify-center gap-1.5"
               >
-                Download for Windows
+                Download 7z Package
               </a>
             </div>
           </div>
