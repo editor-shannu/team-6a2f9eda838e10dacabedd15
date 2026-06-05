@@ -547,12 +547,13 @@ Medium-Impact Quality of Life
       * Restored native Next.js client-side routing by removing the hard navigation click interceptor. This makes tab transitions between Questions, FAQs, and Profiles instantaneous and completely lag-free offline.
       * Replaced the standard browser navigation load with `fetchWithTimeout(request, 1500)`. If offline or on flaky connections, it aborts the network load after 1.5 seconds and immediately serves the cached page shell, removing startup screen delays.
 
-11. **Capacitor Android Native Application Wrapper**
+11. **Capacitor Mobile Applications (Android & iOS Wrappers)**
     * *Resolution*:
       * Created a dedicated `capacitor-app/` folder for native app configurations.
       * Generated `capacitor.config.ts` specifying package name `com.prashnasarathi.app`, app name `PrashnaSārathi`, and linking to the live website host `https://prashnasarathi.vercel.app` to retain dynamic SSR/OAuth features.
-      * Configured essential Capacitor plugins including `SplashScreen`, `PushNotifications`, `Camera` (for profile pictures), `App` (for deep linking), and file uploads.
-      * Documented native integration setup instructions, required npm packages, build commands, and `AndroidManifest.xml` permissions/intent-filter configurations in a detailed walkthrough.
+      * Configured essential Capacitor plugins including `SplashScreen`, `PushNotifications`, `Camera` (for profile pictures), `App` (for deep linking), and file uploads for both platforms.
+      * Documented native integration setup instructions, required npm packages, build commands, and configurations in a detailed walkthrough.
+      * Created public downloads folder configurations and placeholders for `.apk` (Android) and `.ipa` (iOS) files.
 
 12. **Multi-Platform Download Center, Update Checker, and Tauri Windows Desktop App**
     * *Resolution*:
@@ -560,7 +561,7 @@ Medium-Impact Quality of Life
       * Configured Tauri window attributes, file access permissions, and auto-updater endpoints.
       * Created a dynamic `GET /api/app-version` backend API endpoint returning version metadata, changelog, and APK/installer links.
       * Built an `AppUpdateChecker` client component mounted in `PwaProvider` that checks the backend version from the Capacitor wrapper, comparing versionCode to trigger update modals or lockouts (`forceUpdate: true`).
-      * Built a beautiful `/downloads` Download Center containing installation cards for PWA, Android (APK), Windows (.exe), and macOS (.dmg), linking it in the Footer.
+      * Built a beautiful `/downloads` Download Center containing installation cards for PWA, Android (APK), iOS (IPA), Windows (.exe), and macOS (.dmg), linking it in the Footer.
       * Populated public asset placeholders for the installer packages and documented MSVC compilation processes to replace placeholders with production builds.
 
 

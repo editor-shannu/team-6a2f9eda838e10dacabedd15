@@ -109,6 +109,17 @@ export default function Navbar({ onSearch }) {
                           <span>Android App (APK)</span>
                         </a>
                         <a
+                          href="/downloads/prashnasarathi-app.ipa"
+                          download
+                          onClick={() => setInstallOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text)] transition-colors cursor-pointer"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925-3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 002.25 12c0 2.071 1.679 3.75 3.75 3.75h6z" />
+                          </svg>
+                          <span>iOS App (.ipa)</span>
+                        </a>
+                        <a
                           href="/downloads/prashnasarathi-win.exe"
                           download
                           onClick={() => setInstallOpen(false)}
@@ -337,6 +348,17 @@ export default function Navbar({ onSearch }) {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
                     <span>Android App (APK)</span>
+                  </a>
+                  <a
+                    href="/downloads/prashnasarathi-app.ipa"
+                    download
+                    onClick={() => setMenuOpen(false)}
+                    className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-[var(--color-text)] font-semibold hover:bg-[var(--color-bg-tertiary)] rounded-lg transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925-3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 002.25 12c0 2.071 1.679 3.75 3.75 3.75h6z" />
+                    </svg>
+                    <span>iOS App (IPA)</span>
                   </a>
                   <a
                     href="/downloads/prashnasarathi-win.exe"

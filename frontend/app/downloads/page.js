@@ -46,7 +46,7 @@ export default function DownloadCenter() {
         </div>
 
         {/* Support Grid Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           
           {/* Web App Card */}
           <div className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-6 shadow-md hover:shadow-lg transition-all flex flex-col justify-between group relative overflow-hidden">
@@ -112,6 +112,36 @@ export default function DownloadCenter() {
                 className="w-full py-2.5 text-xs font-semibold text-white bg-green-500 hover:bg-green-600 rounded-xl transition-all shadow-md shadow-green-500/10 cursor-pointer flex items-center justify-center gap-1.5"
               >
                 Download APK
+              </a>
+            </div>
+          </div>
+
+          {/* iOS Card */}
+          <div className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-6 shadow-md hover:shadow-lg transition-all flex flex-col justify-between group relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all" />
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-blue-500/10 text-blue-500 rounded-xl">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925-3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 002.25 12c0 2.071 1.679 3.75 3.75 3.75h6z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-[var(--color-text)]">iOS Application</h2>
+                  <p className="text-xs text-[var(--color-text-secondary)]">Apple IPA Package</p>
+                </div>
+              </div>
+              <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
+                Native iOS app built using Capacitor. Sideloadable via AltStore, TestFlight, or enterprise compiler signing profiles.
+              </p>
+            </div>
+            <div className="mt-6">
+              <a
+                href="/downloads/prashnasarathi-app.ipa"
+                download
+                className="w-full py-2.5 text-xs font-semibold text-white bg-blue-500 hover:bg-blue-600 rounded-xl transition-all shadow-md shadow-blue-500/10 cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                Download IPA
               </a>
             </div>
           </div>
