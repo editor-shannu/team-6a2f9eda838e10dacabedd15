@@ -517,6 +517,9 @@ Medium-Impact Quality of Life
    * *Resolution*: Removed the "Suggested" category chips under the main search input to simplify the interface. Redesigned the category navigation sidebar to display as a horizontal swiping strip (`overflow-x-auto`) on mobile devices, ensuring it takes up negligible vertical height, while maintaining the sticky vertical sidebar layout on desktop resolutions.
 5. **Page Refresh Redirection Fix on Authenticated Routes**
    * *Resolution*: Fixed the issue where refreshing pages (like `/admin`, `/questions/ask`, or `/saved`) redirected the logged-in user to the homepage or login screen. Added verification of the `authLoading` state before applying any redirect checks, ensuring the current path is preserved during page reloads.
+6. **Moderation Status Change Email Notifications**
+   * *Resolution*: Added automated email notifications for when users are warned, suspended, shadow-banned, banned, or re-activated. Integrated the email trigger hooks into both `exports.banUser` and `exports.moderateUser` in `backend/controllers/adminController.js`, utilizing Nodemailer and the database queue.
+
 
 
 
