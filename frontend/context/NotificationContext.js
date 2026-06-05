@@ -39,7 +39,7 @@ export function NotificationProvider({ children }) {
     }
 
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/push-service-worker.js').catch(err => {
+      navigator.serviceWorker.register('/sw.js').catch(err => {
         console.log('Service worker registration failed:', err);
       });
     }

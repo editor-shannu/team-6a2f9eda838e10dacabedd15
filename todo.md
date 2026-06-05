@@ -535,6 +535,16 @@ Medium-Impact Quality of Life
      * Added a visual "Owner" badge beside the owner account in both profile and admin pages.
      * Formatted the sent time in both HTML and plain-text email notifications to explicitly use India Standard Time (`Asia/Kolkata` with `hour12: true`) and append the `IST` timezone identifier, preventing timezone discrepancies on the hosting servers.
 
+10. **PWA Conversion & Offline/Responsive Capabilities**
+    * *Resolution*:
+      * Structured a new `frontend/pwa` directory to isolate PWA states, hooks, and providers.
+      * Built a custom React hook `usePWA` to track installation availability (`beforeinstallprompt`), app-installed state, and connectivity status.
+      * Created a floating, responsive, glassmorphic `PwaInstallBanner` component to notify and prompt users on both desktop and mobile layouts.
+      * Formatted and generated standard PWA icon files (72x72 through 512x512) and native iOS/iPadOS splash screen files.
+      * Implemented an online/offline notification banner (`OfflineIndicator`) to dynamically notify users of their network status.
+      * Developed a unified Service Worker (`sw.js`) utilizing static caching and Network-First dynamic API caching for offline FAQ browsing.
+      * Configured the app router manifest and apple-touch startup images metadata inside the root layout.
+
 
 
 

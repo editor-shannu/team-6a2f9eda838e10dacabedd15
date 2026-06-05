@@ -11,10 +11,12 @@ import TermsAndConditionsModal from '@/components/TermsAndConditionsModal';
 import ReportIssueButton from '@/components/ReportIssueButton';
 import NetworkStatus from '@/components/NetworkStatus';
 import { Toaster } from 'react-hot-toast';
+import PwaProvider from '@/pwa/PwaProvider';
 
 export const metadata = {
   title: 'PrashnaSārathi - Community Q&A and FAQ Platform',
   description: 'A community-driven Q&A and FAQ platform for knowledge sharing',
+  manifest: '/manifest.json',
   icons: {
     icon: '/logo.png',
     shortcut: '/logo.png',
@@ -29,6 +31,23 @@ export default function RootLayout({ children }) {
         <link rel="icon" href="/logo.png" type="image/png" />
         <link rel="shortcut icon" href="/logo.png" type="image/png" />
         <link rel="apple-touch-icon" href="/logo.png" />
+        <link rel="manifest" href="/manifest.json" />
+        
+        {/* Apple Mobile Web App Settings */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        
+        {/* iOS Touch Splash Screens */}
+        <link rel="apple-touch-startup-image" href="/pwa/splash/splash-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+        <link rel="apple-touch-startup-image" href="/pwa/splash/splash-1668x2224.png" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+        <link rel="apple-touch-startup-image" href="/pwa/splash/splash-1536x2048.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+        <link rel="apple-touch-startup-image" href="/pwa/splash/splash-1242x2688.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+        <link rel="apple-touch-startup-image" href="/pwa/splash/splash-828x1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+        <link rel="apple-touch-startup-image" href="/pwa/splash/splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+        <link rel="apple-touch-startup-image" href="/pwa/splash/splash-1242x2208.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+        <link rel="apple-touch-startup-image" href="/pwa/splash/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+        <link rel="apple-touch-startup-image" href="/pwa/splash/splash-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -39,16 +58,18 @@ export default function RootLayout({ children }) {
             <NotificationProvider>
               <KeyboardProvider>
                 <ThemeProvider>
-                  <Navbar />
-                  <TermsAndConditionsModal />
-                  <OnboardingModal />
-                  <ReportIssueButton />
-                  <NetworkStatus />
-                  <main className="flex-1">
-                    {children}
-                  </main>
-                  <Footer />
-                  <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+                  <PwaProvider>
+                    <Navbar />
+                    <TermsAndConditionsModal />
+                    <OnboardingModal />
+                    <ReportIssueButton />
+                    <NetworkStatus />
+                    <main className="flex-1">
+                      {children}
+                    </main>
+                    <Footer />
+                    <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+                  </PwaProvider>
                 </ThemeProvider>
               </KeyboardProvider>
             </NotificationProvider>
