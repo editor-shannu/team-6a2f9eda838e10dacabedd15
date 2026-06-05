@@ -79,15 +79,22 @@ export default function NetworkStatus() {
     };
   }, []);
 
-  const isFirstLoad = useRef(true);
+  const [isReady, setIsReady] = useState(false);
+  const prevStatusRef = useRef(status);
 
   useEffect(() => {
-    if (isFirstLoad.current) {
-      isFirstLoad.current = false;
-      if (status === 'good') {
-        return;
-      }
+    const timer = setTimeout(() => setIsReady(true), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!isReady) {
+      prevStatusRef.current = status;
+      return;
     }
+
+    const statusChanged = prevStatusRef.current !== status;
+    prevStatusRef.current = status;
 
     if (status === 'offline') {
       toast.error('You are offline. Serving cached FAQ and Questions data.', {
@@ -103,7 +110,7 @@ export default function NetworkStatus() {
         position: 'top-right',
         icon: '⚠️'
       });
-    } else if (status === 'good') {
+    } else if (status === 'good' && statusChanged) {
       toast.success('Back online! Live synchronization restored.', {
         id: 'network-status-toast',
         duration: 3500,
@@ -111,7 +118,7 @@ export default function NetworkStatus() {
         icon: '⚡'
       });
     }
-  }, [status]);
+  }, [status, isReady]);
 
   if (status === 'good') return null;
 

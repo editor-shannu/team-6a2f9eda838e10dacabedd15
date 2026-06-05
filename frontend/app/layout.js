@@ -59,6 +59,7 @@ export default function RootLayout({ children }) {
               <KeyboardProvider>
                 <ThemeProvider>
                   <PwaProvider>
+                    <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
                     <Navbar />
                     <TermsAndConditionsModal />
                     <OnboardingModal />
@@ -68,7 +69,6 @@ export default function RootLayout({ children }) {
                       {children}
                     </main>
                     <Footer />
-                    <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
                   </PwaProvider>
                 </ThemeProvider>
               </KeyboardProvider>
