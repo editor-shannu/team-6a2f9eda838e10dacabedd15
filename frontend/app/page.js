@@ -183,34 +183,6 @@ export default function HomePage() {
               <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[9px] font-mono text-[var(--color-text-muted)] bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded">Ctrl K</kbd>
             </div>
           </form>
-
-          {/* Suggested filter chips */}
-          <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
-            <span className="font-mono text-[var(--color-text-muted)] mr-1.5">SUGGESTED:</span>
-            <button
-              onClick={() => setSelectedCategory('All Categories')}
-              className={`px-2.5 py-1 rounded-full border text-[10px] transition-colors ${
-                selectedCategory === 'All Categories'
-                  ? 'bg-[var(--color-primary-subtle)] border-[var(--color-primary)]/30 text-[var(--color-primary)] font-medium'
-                  : 'bg-[var(--color-bg-secondary)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:border-[var(--color-border-subtle)]'
-              }`}
-            >
-              All
-            </button>
-            {categories.slice(1, 5).map(cat => (
-              <button
-                key={cat.name}
-                onClick={() => setSelectedCategory(cat.name)}
-                className={`px-2.5 py-1 rounded-full border text-[10px] transition-colors capitalize ${
-                  selectedCategory === cat.name
-                    ? 'bg-[var(--color-primary-subtle)] border-[var(--color-primary)]/30 text-[var(--color-primary)] font-medium'
-                    : 'bg-[var(--color-bg-secondary)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:border-[var(--color-border-subtle)]'
-                }`}
-              >
-                {cat.name.replace(/Phase \d+ — /, '').split(',')[0]}
-              </button>
-            ))}
-          </div>
         </section>
 
         {/* Dashboard Grid Layout */}
@@ -224,17 +196,17 @@ export default function HomePage() {
                 {categories.length - 1 || 0}
               </span>
             </div>
-            <div className="flex flex-col gap-1 max-h-[60vh] overflow-y-auto pr-1">
+            <div className="flex flex-row lg:flex-col gap-1.5 max-h-[60vh] overflow-x-auto lg:overflow-y-auto pb-2.5 lg:pb-0 pr-1">
               {categories.map((cat) => {
                 const isSelected = selectedCategory === cat.name;
                 return (
                   <button
                     key={cat.name}
                     onClick={() => setSelectedCategory(cat.name)}
-                    className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors flex items-center justify-between group ${
+                    className={`shrink-0 w-auto lg:w-full text-left px-3 py-2 rounded-md text-xs transition-colors flex items-center justify-between gap-3 group ${
                       isSelected
                         ? 'bg-[var(--color-primary-subtle)] text-[var(--color-primary)] border border-[var(--color-primary)]/25'
-                        : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-bg-tertiary)]'
+                        : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-bg-tertiary)] border border-transparent'
                     }`}
                   >
                     <span className="flex items-center gap-2 truncate">
@@ -253,7 +225,7 @@ export default function HomePage() {
             {isAdminOrMod && (
               <button
                 onClick={() => setShowCategoryModal(true)}
-                className="w-full mt-3 py-2 border border-dashed border-[var(--color-primary)]/30 hover:border-[var(--color-primary)]/60 text-[10px] text-[var(--color-primary)] font-mono rounded-md hover:bg-[var(--color-primary-subtle)]/30 transition-all text-center block"
+                className="w-full mt-0 lg:mt-3 py-2 border border-dashed border-[var(--color-primary)]/30 hover:border-[var(--color-primary)]/60 text-[10px] text-[var(--color-primary)] font-mono rounded-md hover:bg-[var(--color-primary-subtle)]/30 transition-all text-center block"
               >
                 + Add Category
               </button>
