@@ -17,6 +17,7 @@ export default function Navbar({ onSearch }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [installOpen, setInstallOpen] = useState(false);
   const navbarInputRef = useRef(null);
   const { text: placeholderText, pause, resume } = useTypewriter();
 
@@ -68,9 +69,9 @@ export default function Navbar({ onSearch }) {
                     Admin
                   </Link>
                 )}
-                {isInstallable && (
+                <div className="relative">
                   <button
-                    onClick={installApp}
+                    onClick={() => setInstallOpen(!installOpen)}
                     className="px-2 py-1 text-xs font-semibold text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10 rounded-md transition-colors flex items-center gap-1 cursor-pointer"
                   >
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -78,7 +79,39 @@ export default function Navbar({ onSearch }) {
                     </svg>
                     <span>Install App</span>
                   </button>
-                )}
+                  {installOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setInstallOpen(false)} />
+                      <div className="absolute left-0 mt-2 w-44 bg-[var(--color-bg-secondary)] rounded-md shadow-xl border border-[var(--color-border)] z-20 py-1.5 animate-scale-in">
+                        {isInstallable && (
+                          <button
+                            onClick={() => {
+                              installApp();
+                              setInstallOpen(false);
+                            }}
+                            className="flex items-center gap-2 w-full text-left px-4 py-2 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text)] transition-colors cursor-pointer"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                            </svg>
+                            <span>PWA (Web)</span>
+                          </button>
+                        )}
+                        <a
+                          href="/downloads/prashnasarathi-app.apk"
+                          download
+                          onClick={() => setInstallOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text)] transition-colors cursor-pointer"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                          <span>Android (APK)</span>
+                        </a>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -245,17 +278,34 @@ export default function Navbar({ onSearch }) {
                 <Link href="/tags" className="flex items-center gap-2 px-3 py-2.5 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] rounded-lg transition-colors">Tags</Link>
                 <Link href="/users" className="flex items-center gap-2 px-3 py-2.5 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] rounded-lg transition-colors">Community</Link>
                 {user && <Link href="/questions/ask" className="flex items-center gap-2 px-3 py-2.5 text-sm text-[var(--color-primary)] font-medium hover:bg-[var(--color-primary-subtle)] rounded-lg transition-colors">Ask Question</Link>}
-                {isInstallable && (
-                  <button
-                    onClick={installApp}
-                    className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-emerald-500 font-semibold hover:bg-emerald-500/10 rounded-lg transition-colors cursor-pointer"
+                <div className="border-t border-[var(--color-border)]/40 my-2 pt-2">
+                  <div className="px-3 py-1.5 text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">Install App</div>
+                  {isInstallable && (
+                    <button
+                      onClick={() => {
+                        installApp();
+                        setMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-emerald-500 font-semibold hover:bg-emerald-500/10 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                      </svg>
+                      <span>PWA App (Web)</span>
+                    </button>
+                  )}
+                  <a
+                    href="/downloads/prashnasarathi-app.apk"
+                    download
+                    onClick={() => setMenuOpen(false)}
+                    className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-[var(--color-text)] font-semibold hover:bg-[var(--color-bg-tertiary)] rounded-lg transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
-                    <span>Install App</span>
-                  </button>
-                )}
+                    <span>Android App (APK)</span>
+                  </a>
+                </div>
               </div>
             </div>
           )}
