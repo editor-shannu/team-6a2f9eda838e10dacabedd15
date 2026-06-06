@@ -619,7 +619,13 @@ Medium-Impact Quality of Life
 
 #### Latest Fixes (June 6, 2026)
 
-1. **Google Sign-In Mobile Redirection Support**
+1. **Foreground Mobile & PWA Notification Banner Fix**
+   * *Resolution*: Updated the `showBrowserNotification` method inside `NotificationContext.js` to dispatch notifications via `reg.showNotification(...)` using the active service worker registry. This replaces deprecated `new Notification(...)` calls which are ignored/blocked by mobile WebViews, PWA containers, and iOS/Android browsers when the app is in the foreground.
+2. **Dynamic VAPID Sync & Key Mismatch Resolution**
+   * *Resolution*: Configured `NotificationContext.js` to store the active subscription key in `localStorage` (`registered_vapid_key`) and compare it on login. When a VAPID key mismatch is detected (e.g. following a backend restart with dynamic key generation), the client automatically unsubscribes the obsolete subscription and registers a fresh one, curing silent web push failures.
+3. **Electron PC Windows Notification Activator**
+   * *Resolution*: Registered the App User Model ID `com.prashnasarathi.app` inside `desktop-app/main.js` and defined a session request handler that auto-approves the `notifications` permission request. This enables the Windows `.exe` application to trigger system drawer notifications without freezing or getting suppressed.
+4. **Google Sign-In Mobile Redirection Support**
    * *Resolution*: Configured the `allowNavigation` array inside `capacitor-app/capacitor.config.ts` to explicitly allow Google accounts and Firebase Auth redirect domains to load inside the app WebView. This prevents the OAuth flow from jumping to the external system browser and leaves the native app in a working, authenticated state.
 2. **Resilient Desktop & Web Push Notification Lifecycle**
    * *Resolution*: Optimized the client-side `NotificationContext.js` by tracking logins with `lastCheckedUserRef` to prevent duplicate notification permission prompts and eliminate duplicate toast alerts. Integrated detection for Tauri/Electron PC environments, bypassing service worker Web Push subscription errors while keeping real-time HTML5 local notifications active via Socket.IO.

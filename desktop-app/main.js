@@ -32,8 +32,20 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // Set App User Model ID for Windows Notifications to display correctly
+  app.setAppUserModelId('com.prashnasarathi.app');
+
   // Set User-Agent globally to standard Chrome to bypass Google OAuth disallowed webview restrictions
   session.defaultSession.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+
+  // Automatically grant notification permissions inside Electron webview
+  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
+    if (permission === 'notifications') {
+      callback(true);
+    } else {
+      callback(false);
+    }
+  });
 
   createWindow();
 

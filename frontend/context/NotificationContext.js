@@ -184,25 +184,50 @@ export function NotificationProvider({ children }) {
     
     try {
       const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.getSubscription();
+      let subscription = await registration.pushManager.getSubscription();
+
+      const publicKeyResponse = await api.get('/notifications/push/vapid-public-key');
+      if (!publicKeyResponse || !publicKeyResponse.publicKey) {
+        setIsPushEnabled(!!subscription);
+        return;
+      }
+
+      const serverVapidKey = publicKeyResponse.publicKey;
+      const registeredVapidKey = localStorage.getItem('registered_vapid_key');
+
+      // If subscription exists but VAPID key changed (e.g. server restarted), unsubscribe & force resubscribe
+      if (subscription && registeredVapidKey !== serverVapidKey) {
+        console.log('[Push] Server VAPID key mismatch. Re-subscribing...');
+        try {
+          await subscription.unsubscribe();
+        } catch (_) {}
+        try {
+          await api.delete('/notifications/push/unsubscribe');
+        } catch (_) {}
+        localStorage.removeItem('registered_vapid_key');
+        subscription = null;
+      }
+
       setIsPushEnabled(!!subscription);
 
-      // Auto-subscribe if browser permission is already granted but no subscription exists
+      // Auto-subscribe if browser permission is already granted but no subscription exists (or was just cleared)
       if (!subscription && Notification.permission === 'granted') {
         try {
-          const publicKeyResponse = await api.get('/notifications/push/vapid-public-key');
           const newSubscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(publicKeyResponse.publicKey),
+            applicationServerKey: urlBase64ToUint8Array(serverVapidKey),
           });
 
           await api.post('/notifications/push/subscribe', { subscription: newSubscription });
+          localStorage.setItem('registered_vapid_key', serverVapidKey);
           setIsPushEnabled(true);
         } catch (subErr) {
           console.error('Failed to auto-subscribe web browser push:', subErr);
         }
       }
-    } catch (_) {}
+    } catch (err) {
+      console.error('Error in checkPushSubscription:', err);
+    }
   };
 
   const showBrowserNotification = (data) => {
@@ -215,11 +240,27 @@ export function NotificationProvider({ children }) {
       badge: '/badge.png',
       tag: 'notification',
       requireInteraction: false,
+      data: {
+        link: data.link || '/notifications',
+      }
     };
 
     try {
-      new Notification(title, options);
-    } catch (_) {}
+      // Use service worker to show notification (supported on mobile browsers/PWA and desktop)
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(reg => {
+          reg.showNotification(title, options);
+        }).catch(() => {
+          new Notification(title, options);
+        });
+      } else {
+        new Notification(title, options);
+      }
+    } catch (_) {
+      try {
+        new Notification(title, options);
+      } catch (_) {}
+    }
   };
 
   const urlBase64ToUint8Array = (base64String) => {
@@ -261,12 +302,14 @@ export function NotificationProvider({ children }) {
         return;
       }
 
+      const serverVapidKey = publicKeyResponse.publicKey;
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKeyResponse.publicKey),
+        applicationServerKey: urlBase64ToUint8Array(serverVapidKey),
       });
 
       await api.post('/notifications/push/subscribe', { subscription });
+      localStorage.setItem('registered_vapid_key', serverVapidKey);
       
       setIsPushEnabled(true);
       toast.success('Push notifications enabled');
@@ -293,6 +336,7 @@ export function NotificationProvider({ children }) {
       }
       
       await api.delete('/notifications/push/unsubscribe');
+      localStorage.removeItem('registered_vapid_key');
       setIsPushEnabled(false);
       toast.success('Push notifications disabled');
     } catch (err) {
