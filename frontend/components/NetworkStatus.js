@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
+import api from '@/lib/api';
+
 
 export default function NetworkStatus() {
   const [status, setStatus] = useState('good');
@@ -46,7 +48,7 @@ export default function NetworkStatus() {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 4000);
         // fetch /api/health through our domain
-        const res = await fetch('/api/health', { signal: controller.signal, cache: 'no-store' });
+        const res = await fetch(`${api.baseUrl}/health`, { signal: controller.signal, cache: 'no-store' });
         clearTimeout(timeoutId);
         
         const duration = Date.now() - start;

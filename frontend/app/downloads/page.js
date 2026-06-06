@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import usePWA from '@/pwa/usePWA';
+import api from '@/lib/api';
+
 
 export default function DownloadCenter() {
   const { isInstallable, installApp } = usePWA();
@@ -15,7 +17,7 @@ export default function DownloadCenter() {
   useEffect(() => {
     const fetchVersion = async () => {
       try {
-        const response = await fetch('/api/app-version');
+        const response = await fetch(`${api.baseUrl}/app-version`);
         if (response.ok) {
           const data = await response.json();
           const date = data.updatedAt ? new Date(data.updatedAt).toLocaleDateString('en-US', {

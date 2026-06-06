@@ -100,7 +100,7 @@ export default function AdminPage() {
 
   const fetchCurrentAppVersion = async () => {
     try {
-      const response = await fetch('/api/app-version');
+      const response = await fetch(`${api.baseUrl}/app-version`);
       if (response.ok) {
         const data = await response.json();
         setAppVersion(data.latestVersion || '1.1.0');

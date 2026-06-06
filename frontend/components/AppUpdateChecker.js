@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useSocket } from '@/context/SocketContext';
+import api from '@/lib/api';
+
 
 export default function AppUpdateChecker() {
   const [updateInfo, setUpdateInfo] = useState(null);
@@ -38,7 +40,7 @@ export default function AppUpdateChecker() {
       setCurrentVersion(installedVersionName);
 
       // Fetch version info from backend
-      const response = await fetch('/api/app-version');
+      const response = await fetch(`${api.baseUrl}/app-version`);
       if (!response.ok) return;
       const data = await response.json();
 
