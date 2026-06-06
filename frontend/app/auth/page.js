@@ -99,18 +99,11 @@ function AuthPageContent() {
       }
       return;
     }
+
     setError('');
     setLoading(true);
     try {
-      // Check if running on mobile browser
-      const isMobile = typeof window !== 'undefined' && 
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(window.navigator.userAgent);
-
-      if (isMobile) {
-        await signInWithRedirect(auth, googleProvider);
-        return;
-      }
-
+      // Try popup first (most reliable on all web platforms, including Safari and PWA, when triggered from user click)
       const result = await signInWithPopup(auth, googleProvider);
       const idToken = await result.user.getIdToken();
       if (!idToken) {
@@ -119,22 +112,16 @@ function AuthPageContent() {
       await loginWithGoogle(idToken);
       router.push('/');
     } catch (err) {
-      console.error(err);
-      if (err.code === 'auth/network-request-failed' || err.message?.includes('network-request-failed')) {
-        const email = prompt('Google Sign-in encountered a network error. Enter an email to perform a simulated Google Sign-in:', 'google-user@example.com');
-        if (email) {
-          try {
-            await loginWithGoogle(`mock_google_token_${email}`);
-            router.push('/');
-            return;
-          } catch (mockErr) {
-            setError(mockErr.message || 'Simulated Google Sign-in failed');
-            toast.error(mockErr.message || 'Simulated Google Sign-in failed');
-          }
-        }
+      console.warn('[Google Auth] Popup failed or blocked, trying redirect:', err);
+      // Fallback: signInWithRedirect if popup is blocked or fails
+      try {
+        await signInWithRedirect(auth, googleProvider);
+      } catch (redirectErr) {
+        console.error('[Google Auth] Redirect also failed:', redirectErr);
+        setError('Google Sign-in failed. Please use the fallback email verification.');
+        toast.error('Google Sign-in failed. Opening fallback verification.');
+        setShowCapacitorGoogleModal(true);
       }
-      setError(err.message || 'Google Sign-in failed');
-      toast.error(err.message || 'Google Sign-in failed');
     } finally {
       setLoading(false);
     }
@@ -187,7 +174,7 @@ function AuthPageContent() {
             type="button"
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--color-border)]/60 hover:bg-[var(--color-bg-tertiary)] rounded-xl font-medium text-sm text-[var(--color-text)] transition-colors mb-6 shadow-sm disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--color-border)]/60 hover:bg-[var(--color-bg-tertiary)] rounded-xl font-medium text-sm text-[var(--color-text)] transition-colors mb-2 shadow-sm disabled:opacity-50 cursor-pointer"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -209,6 +196,19 @@ function AuthPageContent() {
             </svg>
             Sign in with Google
           </button>
+
+          <div className="text-center mb-6">
+            <button
+              type="button"
+              onClick={() => {
+                setCapacitorGoogleEmail('');
+                setShowCapacitorGoogleModal(true);
+              }}
+              className="text-[11px] font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors underline decoration-dotted cursor-pointer"
+            >
+              Google Sign-in issues? Click here to use email fallback
+            </button>
+          </div>
 
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">

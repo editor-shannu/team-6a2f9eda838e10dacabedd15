@@ -595,11 +595,20 @@ Medium-Impact Quality of Life
 
 #### Latest Fixes (June 6, 2026)
 
-1. **Administrative Email Broadcasting**
+1. **Resilient Google Sign-In Popup-First Flow with Fallbacks**
+   * *Resolution*: Updated the Google Sign-in flow inside `frontend/app/auth/page.js` to run `signInWithPopup` first (the most reliable standard for mobile web browsers, PWA, and Safari). If blocked or failed, it automatically falls back to `signInWithRedirect`, and subsequently opens the custom email modal. Appended a clear "Google Sign-in issues? Click here to use email fallback" link in the UI to prevent user lockouts.
+
+2. **Unified Mobile Menu Navigation**
+   * *Resolution*: Streamlined the mobile hamburger dropdown in `Navbar.js` by replacing all OS-specific install links with a single direct link to the consolidated `/downloads` page. Cleaned up unused hooks, states, and imports to ensure zero warnings in Next.js builds.
+
+3. **Android Compilation and JDK 21 Environment Setup**
+   * *Resolution*: Configured `org.gradle.java.home` inside `gradle.properties` targeting the Android Studio JBR (Java 21 environment). This resolves JDK compatibility failures and allows compiling the Android project debug APK successfully.
+
+4. **Administrative Email Broadcasting**
    * *Root Cause*: Admins needed a direct way to broadcast bulk announcements or announcements via email to all active platform members at once.
    * *Resolution*: Created the `POST /api/admin/emails/broadcast` endpoint and enqueued outbound messages via the Nodemailer delivery system. Built a dedicated "Broadcast Email" tab in the React Admin Dashboard for drafting and enqueuing these announcements.
    
-2. **Dynamic In-App Updates & Live Version Checking**
+5. **Dynamic In-App Updates & Live Version Checking**
    * *Root Cause*: Hardcoded version configs made it impossible to force update native wrappers or show live update prompts dynamically across Web, Capacitor, and Tauri.
    * *Resolution*: Introduced a MongoDB-backed `AppVersion` model and registered the `POST /api/admin/app-version` management route. Created the "App Updates" tab in the Admin Dashboard to publish release meta, pushing live Socket.IO update notifications to clients. Reconstructed the Download Center to dynamically fetch and display version details and APK download URLs.
 
