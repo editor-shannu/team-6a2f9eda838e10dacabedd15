@@ -595,37 +595,32 @@ Medium-Impact Quality of Life
 
 #### Latest Fixes (June 6, 2026)
 
-1. **Resilient Google Sign-In Popup-First Flow with Fallbacks**
+1. **Cross-Platform Push Notification Engine (FCM & VAPID)**
+   * *Resolution*: Refactored `backend/services/pushService.js` to support dual-channel real-time push notification delivery. PWA and Web users are targeted via standard Web Push (VAPID), while native Android/iOS hybrid wrapper clients are registered to receive background push notifications using Firebase Cloud Messaging (FCM) even when the application is closed.
+2. **Capacitor Native Push Notifications Integration**
+   * *Resolution*: Installed `@capacitor/push-notifications` native plugin. Configured native permission prompts and device registration inside `NotificationContext.js`. Generated a fresh Android debug APK (`prashnasarathi-app.apk`) including native push capabilities and updated the download repository.
+3. **Automatic Web Browser Push Auto-Subscription**
+   * *Resolution*: Implemented an automatic check in the frontend `NotificationContext.js` that automatically registers and subscribes the user's web browser if notification permissions have already been granted but the subscription expired or is missing.
+4. **Resilient Google Sign-In Popup-First Flow with Fallbacks**
    * *Resolution*: Updated the Google Sign-in flow inside `frontend/app/auth/page.js` to run `signInWithPopup` first (the most reliable standard for mobile web browsers, PWA, and Safari). If blocked or failed, it automatically falls back to `signInWithRedirect`, and subsequently opens the custom email modal. Appended a clear "Google Sign-in issues? Click here to use email fallback" link in the UI to prevent user lockouts.
-
-2. **Unified Mobile Menu Navigation**
+5. **Unified Mobile Menu Navigation**
    * *Resolution*: Streamlined the mobile hamburger dropdown in `Navbar.js` by replacing all OS-specific install links with a single direct link to the consolidated `/downloads` page. Cleaned up unused hooks, states, and imports to ensure zero warnings in Next.js builds.
-
-3. **Android Compilation and JDK 21 Environment Setup**
+6. **Android Compilation and JDK 21 Environment Setup**
    * *Resolution*: Configured `org.gradle.java.home` inside `gradle.properties` targeting the Android Studio JBR (Java 21 environment). This resolves JDK compatibility failures and allows compiling the Android project debug APK successfully.
-
-4. **Administrative Email Broadcasting**
+7. **Administrative Email Broadcasting**
    * *Root Cause*: Admins needed a direct way to broadcast bulk announcements or announcements via email to all active platform members at once.
    * *Resolution*: Created the `POST /api/admin/emails/broadcast` endpoint and enqueued outbound messages via the Nodemailer delivery system. Built a dedicated "Broadcast Email" tab in the React Admin Dashboard for drafting and enqueuing these announcements.
-   
-5. **Dynamic In-App Updates & Live Version Checking**
+8. **Dynamic In-App Updates & Live Version Checking**
    * *Root Cause*: Hardcoded version configs made it impossible to force update native wrappers or show live update prompts dynamically across Web, Capacitor, and Tauri.
    * *Resolution*: Introduced a MongoDB-backed `AppVersion` model and registered the `POST /api/admin/app-version` management route. Created the "App Updates" tab in the Admin Dashboard to publish release meta, pushing live Socket.IO update notifications to clients. Reconstructed the Download Center to dynamically fetch and display version details and APK download URLs.
-
-3. **Capacitor Native Push Notification Permissions**
-   * *Resolution*: Refactored `AppUpdateChecker.js` to request push notification permissions natively on hybrid mobile startup using `@capacitor/push-notifications`.
-
-4. **Secure Hybrid Google Auth**
+9. **Secure Hybrid Google Auth**
    * *Resolution*: Built a custom fallback modal for Capacitor environments (`frontend/app/auth/page.js`), enabling mobile users to input their email and authenticate when standard Google redirection is blocked by native WebView restrictions.
-
-5. **FAQ Moderation, Deletion Controls & Audit Logging**
-   * *Resolution*: Enabled moderators and administrators to delete entire FAQ categories, FAQs, or individual questions directly within the UI, using dynamic state reloading to update the view without page refreshes. Implemented category-level, FAQ-level, and FAQ-item-level reporting options for all authenticated users. Backed all deletion actions (categories, FAQs, and FAQ items) with automated `AuditLog` entry creation to preserve moderator accountability.
-
-6. **Mobile Branding (Icons & Splash Screen)**
-   * *Resolution*: Replaced default Capacitor branding files under `capacitor-app/resources`. Deleted default Android XML vector template launcher icons to force the compilation to use generated custom PNG launcher icons, and set the adaptive icon background to the dark branding color `#0c0f17`. Re-generated density-specific assets using `cordova-res`.
-
-7. **Combined Download Center & macOS Deprecation**
-   * *Resolution*: Deprecated macOS DMG downloads and updated the `/downloads` page to combine the Web PWA and iOS install options into a clean, single "iOS & Web App (PWA)" card, simplifying the layout to a balanced 3-column configuration.
+10. **FAQ Moderation, Deletion Controls & Audit Logging**
+    * *Resolution*: Enabled moderators and administrators to delete entire FAQ categories, FAQs, or individual questions directly within the UI, using dynamic state reloading to update the view without page refreshes. Implemented category-level, FAQ-level, and FAQ-item-level reporting options for all authenticated users. Backed all deletion actions (categories, FAQs, and FAQ items) with automated `AuditLog` entry creation to preserve moderator accountability.
+11. **Mobile Branding (Icons & Splash Screen)**
+    * *Resolution*: Replaced default Capacitor branding files under `capacitor-app/resources`. Deleted default Android XML vector template launcher icons to force the compilation to use generated custom PNG launcher icons, and set the adaptive icon background to the dark branding color `#0c0f17`. Re-generated density-specific assets using `cordova-res`.
+12. **Combined Download Center & macOS Deprecation**
+    * *Resolution*: Deprecated macOS DMG downloads and updated the `/downloads` page to combine the Web PWA and iOS install options into a clean, single "iOS & Web App (PWA)" card, simplifying the layout to a balanced 3-column configuration.
 
 #### Older Fixes (June 2, 2026)
 

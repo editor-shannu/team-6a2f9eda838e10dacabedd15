@@ -155,6 +155,22 @@ export function NotificationProvider({ children }) {
       const registration = await navigator.serviceWorker.ready;
       const subscription = await registration.pushManager.getSubscription();
       setIsPushEnabled(!!subscription);
+
+      // Auto-subscribe if browser permission is already granted but no subscription exists
+      if (!subscription && Notification.permission === 'granted') {
+        try {
+          const publicKeyResponse = await api.get('/notifications/push/vapid-public-key');
+          const newSubscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(publicKeyResponse.publicKey),
+          });
+
+          await api.post('/notifications/push/subscribe', { subscription: newSubscription });
+          setIsPushEnabled(true);
+        } catch (subErr) {
+          console.error('Failed to auto-subscribe web browser push:', subErr);
+        }
+      }
     } catch (_) {}
   };
 

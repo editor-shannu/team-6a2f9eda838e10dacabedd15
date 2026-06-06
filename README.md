@@ -115,23 +115,33 @@ If you prefer running services directly on the host machine:
 ```
 faq-site/
 ├── backend/              # Express API server (port 5000)
-│   ├── config/           # DB, Redis, ES, Kafka connections
-│   ├── controllers/      # Route handlers (auth, questions, answers, votes, etc.)
+│   ├── config/           # DB, Redis, ES, Firebase, Kafka connections
+│   ├── controllers/      # Route handlers (auth, questions, answers, push notifications, etc.)
 │   ├── middleware/        # JWT auth, error handling, rate limiting, uploads
-│   ├── models/           # Mongoose schemas (User, Question, Answer, FAQ, Vote, etc.)
-│   ├── routes/           # Express route definitions (11 route files)
+│   ├── models/           # Mongoose schemas (User, Question, Answer, FAQ, AppVersion, etc.)
+│   ├── routes/           # Express route definitions (12 route files)
 │   ├── seeds/            # Database seed script + test users
-│   ├── services/         # ES search, recommendations, analytics, moderation
+│   ├── services/         # ES search, recommendations, analytics, pushService, moderation
 │   ├── socket/           # Socket.IO real-time setup
-│   └── utils/            # Helpers, validators, permissions
+│   └── utils/            # Helpers, validators, permissions, email template
 ├── frontend/             # Next.js 14 app (port 3000)
-│   ├── app/              # App Router pages (faqs, questions, admin, auth, etc.)
+│   ├── app/              # App Router pages (faqs, questions, admin, auth, saved, downloads, etc.)
 │   ├── components/       # Shared React components
-│   ├── context/          # Auth, Socket, Theme, Keyboard providers
-│   ├── hooks/            # Custom hooks (list keyboard navigation)
+│   ├── context/          # Auth, Socket, Theme, Keyboard, NotificationContext providers
+│   ├── hooks/            # Custom hooks (list keyboard navigation, PWA installer)
 │   ├── lib/              # API client & utilities
 │   ├── services/         # Frontend services (admin analytics, etc.)
 │   └── styles/           # Global CSS with Tailwind
+├── capacitor-app/        # Capacitor Native App (Android & iOS wrappers)
+│   ├── android/          # Native Android Gradle project
+│   ├── resources/        # Launcher icons, splash screen assets
+│   ├── package.json      # Dependencies and synchronization tasks
+│   └── capacitor.config.ts # Core configuration mapping to live website host
+├── tauri-app/            # Tauri Windows Desktop App (.exe)
+│   ├── src-tauri/        # Rust backend configurations, Cargo manifest, build scripts
+│   ├── out/              # Static HTML build artifact output folder
+│   ├── package.json      # Desktop app build tasks
+│   └── tauri.conf.json   # Tauri features, allowlists, and window parameters
 ├── FastAPI_python_model/ # FastAPI AI microservice (spam & noise classification)
 │   ├── main.py           # FastAPI server entry point
 │   ├── Dockerfile        # Container setup for Python dependencies
