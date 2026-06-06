@@ -41,6 +41,95 @@ export default function HomePage() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryIcon, setNewCategoryIcon] = useState('📌');
   const [addingCategory, setAddingCategory] = useState(false);
+  const [dbCategories, setDbCategories] = useState([]);
+
+  const handleDeleteCategory = async (catName) => {
+    if (!confirm(`Are you sure you want to delete the category "${catName}"? This will unset this category on all questions and FAQs.`)) return;
+    const matchedCat = dbCategories.find(c => c.name.toLowerCase() === catName.toLowerCase());
+    try {
+      if (matchedCat) {
+        await api.delete(`/categories/${matchedCat._id}`);
+      } else {
+        toast.error('Category configuration document not found.');
+        return;
+      }
+      toast.success('Category deleted successfully');
+      loadFAQs();
+    } catch (err) {
+      toast.error(err.message || 'Failed to delete category');
+    }
+  };
+
+  const handleReportCategory = async (catName) => {
+    if (!user) {
+      toast.error('Please login to report a category');
+      return;
+    }
+    const reason = prompt(`Please specify your reason for reporting the category "${catName}":`);
+    if (!reason || !reason.trim()) return;
+
+    try {
+      await api.post('/admin/reports', {
+        subject: `Report Category: ${catName}`,
+        description: reason.trim(),
+        pageUrl: `/faqs?category=${encodeURIComponent(catName)}`
+      });
+      toast.success('Category reported successfully. Our team will review it.');
+    } catch (err) {
+      toast.error(err.message || 'Failed to submit report');
+    }
+  };
+
+  const handleDeleteFAQ = async (faq) => {
+    if (!confirm(`Are you sure you want to delete the FAQ page "${faq.title}"? This will delete all items under it.`)) return;
+    try {
+      await api.delete(`/faqs/${faq._id}`);
+      toast.success('FAQ deleted successfully');
+      loadFAQs();
+    } catch (err) {
+      toast.error(err.message || 'Failed to delete FAQ');
+    }
+  };
+
+  const handleReportFAQ = async (faq) => {
+    if (!user) {
+      toast.error('Please login to report an FAQ');
+      return;
+    }
+    const reason = prompt(`Please specify your reason for reporting the FAQ "${faq.title}":`);
+    if (!reason || !reason.trim()) return;
+
+    try {
+      await api.post('/admin/reports', {
+        subject: `Report FAQ Page: ${faq.title}`,
+        description: reason.trim(),
+        pageUrl: `/faqs/${faq.slug}`
+      });
+      toast.success('FAQ reported successfully. Our team will review it.');
+    } catch (err) {
+      toast.error(err.message || 'Failed to submit report');
+    }
+  };
+
+  const handleReportFAQItem = async (faq, item) => {
+    if (!user) {
+      toast.error('Please login to report a question');
+      return;
+    }
+    const reason = prompt(`Please specify your reason for reporting the question "${item.question}":`);
+    if (!reason || !reason.trim()) return;
+
+    try {
+      await api.post('/admin/reports', {
+        subject: `Report FAQ Item: ${item.question}`,
+        description: reason.trim(),
+        pageUrl: `/faqs/${faq.slug}#${item._id}`
+      });
+      toast.success('Question reported successfully. Our team will review it.');
+    } catch (err) {
+      toast.error(err.message || 'Failed to submit report');
+    }
+  };
 
   useEffect(() => {
     loadFAQs();
@@ -49,8 +138,13 @@ export default function HomePage() {
   const loadFAQs = async () => {
     try {
       setLoading(true);
-      const data = await api.get('/faqs', { limit: 100 });
-      const faqList = data.faqs || [];
+      const [faqData, catData] = await Promise.all([
+        api.get('/faqs', { limit: 100 }),
+        api.get('/categories').catch(() => ({ categories: [] }))
+      ]);
+      const faqList = faqData.faqs || [];
+      const dbCats = catData.categories || [];
+      setDbCategories(dbCats);
 
       const categoryMap = {};
       faqList.forEach(faq => {
@@ -200,10 +294,18 @@ export default function HomePage() {
               {categories.map((cat) => {
                 const isSelected = selectedCategory === cat.name;
                 return (
-                  <button
+                  <div
                     key={cat.name}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => setSelectedCategory(cat.name)}
-                    className={`shrink-0 w-auto lg:w-full text-left px-3 py-2 rounded-md text-xs transition-colors flex items-center justify-between gap-3 group ${
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedCategory(cat.name);
+                      }
+                    }}
+                    className={`shrink-0 w-auto lg:w-full text-left px-3 py-2 rounded-md text-xs cursor-pointer select-none transition-colors flex items-center justify-between gap-3 group ${
                       isSelected
                         ? 'bg-[var(--color-primary-subtle)] text-[var(--color-primary)] border border-[var(--color-primary)]/25'
                         : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-bg-tertiary)] border border-transparent'
@@ -213,12 +315,47 @@ export default function HomePage() {
                       <span className="text-sm shrink-0">{getIcon(cat.name)}</span>
                       <span className="truncate leading-none">{cat.name}</span>
                     </span>
-                    <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded transition-colors ${
-                      isSelected ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] border border-[var(--color-border)]'
-                    }`}>
-                      {cat.count}
-                    </span>
-                  </button>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {cat.name !== 'All Categories' && (
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {/* Report Button */}
+                          <button
+                            title="Report Category"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleReportCategory(cat.name);
+                            }}
+                            className="p-0.5 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-[var(--color-text-muted)] hover:text-amber-500"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                            </svg>
+                          </button>
+
+                          {/* Delete Button */}
+                          {isAdminOrMod && (
+                            <button
+                              title="Delete Category"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteCategory(cat.name);
+                              }}
+                              className="p-0.5 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-[var(--color-text-muted)] hover:text-red-500"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded transition-colors ${
+                        isSelected ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] border border-[var(--color-border)]'
+                      }`}>
+                        {cat.count}
+                      </span>
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -323,14 +460,46 @@ export default function HomePage() {
                             {faq.title}
                           </h3>
                         </div>
-                        <svg
-                          className={`w-3.5 h-3.5 text-[var(--color-text-muted)] transition-transform duration-200 mt-1 shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                        </svg>
+                        <div className="flex items-center gap-2 mt-1 shrink-0">
+                          {/* Report Button */}
+                          <button
+                            title="Report FAQ"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleReportFAQ(faq);
+                            }}
+                            className="p-1 rounded text-[var(--color-text-muted)] hover:text-amber-500 hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                            </svg>
+                          </button>
+                          
+                          {/* Delete Button */}
+                          {isAdminOrMod && (
+                            <button
+                              title="Delete FAQ"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteFAQ(faq);
+                              }}
+                              className="p-1 rounded text-[var(--color-text-muted)] hover:text-red-500 hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          )}
+
+                          <svg
+                            className={`w-3.5 h-3.5 text-[var(--color-text-muted)] transition-transform duration-200 mt-1 shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
                       </button>
 
                       {/* Expanded Accordion Content */}
@@ -373,6 +542,20 @@ export default function HomePage() {
                                       >
                                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" /></svg>
                                         <span>No ({item.notHelpfulCount || 0})</span>
+                                      </button>
+                                      
+                                      <span className="text-[var(--color-text-muted)]">|</span>
+                                      
+                                      {/* Report FAQ Item */}
+                                      <button
+                                        onClick={() => handleReportFAQItem(faq, item)}
+                                        className="flex items-center gap-1 hover:text-amber-500 transition-colors"
+                                        title="Report question or answer"
+                                      >
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                                        </svg>
+                                        <span>Report</span>
                                       </button>
                                     </div>
                                   </div>

@@ -618,8 +618,8 @@ Medium-Impact Quality of Life
 4. **Secure Hybrid Google Auth**
    * *Resolution*: Built a custom fallback modal for Capacitor environments (`frontend/app/auth/page.js`), enabling mobile users to input their email and authenticate when standard Google redirection is blocked by native WebView restrictions.
 
-5. **FAQ Moderation & Deletion Controls**
-   * *Resolution*: Enabled moderators and administrators to delete entire FAQ categories or individual questions directly within the UI. Added a "Delete FAQ" button in the FAQ detail header and a "Delete Question" button inside the feedback area of each FAQ item.
+5. **FAQ Moderation, Deletion Controls & Audit Logging**
+   * *Resolution*: Enabled moderators and administrators to delete entire FAQ categories, FAQs, or individual questions directly within the UI, using dynamic state reloading to update the view without page refreshes. Implemented category-level, FAQ-level, and FAQ-item-level reporting options for all authenticated users. Backed all deletion actions (categories, FAQs, and FAQ items) with automated `AuditLog` entry creation to preserve moderator accountability.
 
 6. **Mobile Branding (Icons & Splash Screen)**
    * *Resolution*: Replaced default Capacitor branding files under `capacitor-app/resources`. Deleted default Android XML vector template launcher icons to force the compilation to use generated custom PNG launcher icons, and set the adaptive icon background to the dark branding color `#0c0f17`. Re-generated density-specific assets using `cordova-res`.

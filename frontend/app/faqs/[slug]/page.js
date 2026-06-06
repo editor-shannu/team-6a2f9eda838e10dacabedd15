@@ -129,6 +129,46 @@ export default function FAQDetailPage() {
     }
   };
 
+  const handleReportFAQ = async () => {
+    if (!user) {
+      toast.error('Please login to report this FAQ page');
+      return;
+    }
+    const reason = prompt(`Please specify your reason for reporting this FAQ "${faq.title}":`);
+    if (!reason || !reason.trim()) return;
+
+    try {
+      await api.post('/admin/reports', {
+        subject: `Report FAQ Page: ${faq.title}`,
+        description: reason.trim(),
+        pageUrl: `/faqs/${faq.slug}`
+      });
+      toast.success('FAQ page reported successfully. Our team will review it.');
+    } catch (err) {
+      toast.error(err.message || 'Failed to submit report');
+    }
+  };
+
+  const handleReportFAQItem = async (item) => {
+    if (!user) {
+      toast.error('Please login to report this question');
+      return;
+    }
+    const reason = prompt(`Please specify your reason for reporting the question "${item.question}":`);
+    if (!reason || !reason.trim()) return;
+
+    try {
+      await api.post('/admin/reports', {
+        subject: `Report FAQ Item: ${item.question}`,
+        description: reason.trim(),
+        pageUrl: `/faqs/${faq.slug}#${item._id}`
+      });
+      toast.success('Question reported successfully. Our team will review it.');
+    } catch (err) {
+      toast.error(err.message || 'Failed to submit report');
+    }
+  };
+
   const handleDeleteItem = async (itemId) => {
     if (!confirm('Are you sure you want to delete this question?')) return;
     try {
@@ -223,6 +263,9 @@ export default function FAQDetailPage() {
                     </button>
                   </>
                 )}
+                <button onClick={handleReportFAQ} className="btn-secondary btn-sm h-7 !px-2.5 !py-1 text-xs shrink-0 text-amber-500 hover:text-white hover:bg-amber-500 transition-colors border-amber-500/30">
+                  Report
+                </button>
                 <button onClick={handleSave} className="btn-secondary btn-sm h-7 !px-2.5 !py-1 text-xs shrink-0">
                   {isSaved ? 'Saved' : 'Save'}
                 </button>
@@ -324,6 +367,19 @@ export default function FAQDetailPage() {
                             >
                               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" /></svg>
                               No ({item.notHelpfulCount || 0})
+                            </button>
+                            
+                            <span className="text-[var(--color-text-muted)]">|</span>
+                            
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleReportFAQItem(item); }}
+                              className="flex items-center gap-1 hover:text-amber-500 transition-colors text-[var(--color-text-muted)]"
+                              title="Report question or answer"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                              </svg>
+                              Report
                             </button>
                           </div>
                           {isAdminOrMod && (
