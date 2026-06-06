@@ -33,7 +33,8 @@ export default function NotificationsPage() {
     archiveNotification,
     refreshNotifications,
     browserPermission,
-    requestBrowserPermission
+    requestBrowserPermission,
+    showBrowserNotification
   } = useNotifications() || {};
   const [loading, setLoading] = useState(!notifications.length);
 

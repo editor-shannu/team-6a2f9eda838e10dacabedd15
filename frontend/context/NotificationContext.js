@@ -443,6 +443,7 @@ export function NotificationProvider({ children }) {
       browserPermission,
       isPushEnabled,
       requestBrowserPermission,
+      showBrowserNotification,
       subscribeToPush,
       unsubscribeFromPush,
       markAsRead,
