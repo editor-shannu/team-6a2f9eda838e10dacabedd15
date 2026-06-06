@@ -106,7 +106,7 @@ export function NotificationProvider({ children }) {
         position: 'top-right'
       });
 
-      if (browserPermission === 'granted') {
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
         showBrowserNotification(data);
       }
     };
@@ -132,7 +132,7 @@ export function NotificationProvider({ children }) {
       });
 
       // Also trigger browser notification
-      if (browserPermission === 'granted') {
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
         showBrowserNotification({
           title: data.title || 'System Alert',
           message: data.message
@@ -232,8 +232,16 @@ export function NotificationProvider({ children }) {
 
       setIsPushEnabled(!!subscription);
 
-      // Auto-subscribe if browser permission is already granted but no subscription exists (or was just cleared)
-      if (!subscription && Notification.permission === 'granted') {
+      // Always sync subscription with the backend when logged in to prevent out-of-sync accounts
+      if (subscription) {
+        try {
+          await api.post('/notifications/push/subscribe', { subscription });
+          localStorage.setItem('registered_vapid_key', serverVapidKey);
+          setIsPushEnabled(true);
+        } catch (syncErr) {
+          console.error('Failed to sync push subscription with backend:', syncErr.message);
+        }
+      } else if (Notification.permission === 'granted') {
         try {
           const newSubscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
