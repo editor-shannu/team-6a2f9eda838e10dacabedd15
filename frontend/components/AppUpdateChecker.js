@@ -58,6 +58,26 @@ export default function AppUpdateChecker() {
   useEffect(() => {
     // Initial startup check
     const timer = setTimeout(checkUpdates, 3000);
+
+    // Request push notification permissions on Capacitor startup
+    if (typeof window !== 'undefined' && window.Capacitor) {
+      const initPush = async () => {
+        try {
+          const { PushNotifications } = require('@capacitor/push-notifications');
+          let permStatus = await PushNotifications.checkPermissions();
+          if (permStatus.receive === 'prompt' || permStatus.receive === 'prompt-with-rationale') {
+            permStatus = await PushNotifications.requestPermissions();
+          }
+          if (permStatus.receive === 'granted') {
+            await PushNotifications.register();
+          }
+        } catch (err) {
+          console.warn('[Push Permission Hook] Failed to initialize push notifications:', err);
+        }
+      };
+      initPush();
+    }
+
     return () => clearTimeout(timer);
   }, []);
 

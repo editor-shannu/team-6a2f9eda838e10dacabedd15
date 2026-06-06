@@ -56,7 +56,7 @@ export default function DownloadCenter() {
         {/* Support Grid Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           
-          {/* Web App Card */}
+          {/* iOS & Web App (PWA) Card */}
           <div className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-6 shadow-md hover:shadow-lg transition-all flex flex-col justify-between group relative overflow-hidden">
             <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-all" />
             <div className="flex flex-col gap-4">
@@ -67,13 +67,21 @@ export default function DownloadCenter() {
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-[var(--color-text)]">Web App (PWA)</h2>
+                  <h2 className="text-base font-bold text-[var(--color-text)]">iOS & Web App (PWA)</h2>
                   <p className="text-xs text-[var(--color-text-secondary)]">Instant browser app shell</p>
                 </div>
               </div>
               <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
                 Add to your device home screen directly from your browser. Includes offline caching support and quick launching.
               </p>
+              <div className="mt-1 border border-dashed border-blue-500/30 rounded-xl p-3 bg-blue-500/5">
+                <h3 className="text-xs font-semibold text-blue-400 mb-1">How to Install on iOS (iPhone/iPad):</h3>
+                <ol className="text-[10px] text-[var(--color-text-secondary)] list-decimal list-inside space-y-1">
+                  <li>Open this site in <strong>Safari</strong></li>
+                  <li>Tap the <strong>Share</strong> button (bottom bar)</li>
+                  <li>Scroll down and tap <strong>Add to Home Screen</strong></li>
+                </ol>
+              </div>
             </div>
             <div className="mt-6">
               {isInstallable ? (
@@ -124,35 +132,6 @@ export default function DownloadCenter() {
             </div>
           </div>
 
-          {/* iOS Card */}
-          <div className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-6 shadow-md hover:shadow-lg transition-all flex flex-col justify-between group relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all" />
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-blue-500/10 text-blue-500 rounded-xl">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925-3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 002.25 12c0 2.071 1.679 3.75 3.75 3.75h6z" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-[var(--color-text)]">iOS Application</h2>
-                  <p className="text-xs text-[var(--color-text-secondary)]">Safari PWA Install</p>
-                </div>
-              </div>
-              <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
-                Install directly on your iPhone or iPad without any third-party app stores or sideloading tools.
-              </p>
-            </div>
-            <div className="mt-6 border border-dashed border-blue-500/30 rounded-xl p-3 bg-blue-500/5">
-              <h3 className="text-xs font-semibold text-blue-400 mb-1">How to Install on iOS:</h3>
-              <ol className="text-[10px] text-[var(--color-text-secondary)] list-decimal list-inside space-y-1">
-                <li>Open this site in <strong>Safari</strong></li>
-                <li>Tap the <strong>Share</strong> button (bottom bar)</li>
-                <li>Scroll down and tap <strong>Add to Home Screen</strong></li>
-              </ol>
-            </div>
-          </div>
-
           {/* Windows Card */}
           <div className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-6 shadow-md hover:shadow-lg transition-all flex flex-col justify-between group relative overflow-hidden">
             <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 transition-all" />
@@ -184,36 +163,6 @@ export default function DownloadCenter() {
                 className="w-full py-2.5 text-xs font-semibold text-white bg-indigo-500 hover:bg-indigo-600 rounded-xl transition-all shadow-md shadow-indigo-500/10 cursor-pointer flex items-center justify-center gap-1.5"
               >
                 Download Setup Installer
-              </a>
-            </div>
-          </div>
-
-          {/* macOS Card */}
-          <div className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-6 shadow-md hover:shadow-lg transition-all flex flex-col justify-between group relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full blur-2xl group-hover:bg-rose-500/10 transition-all" />
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-rose-500/10 text-rose-500 rounded-xl">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925-3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 002.25 12c0 2.071 1.679 3.75 3.75 3.75h6z" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-[var(--color-text)]">macOS Application</h2>
-                  <p className="text-xs text-[var(--color-text-secondary)]">Apple DMG Installer</p>
-                </div>
-              </div>
-              <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
-                Native macOS client optimized for Apple Silicon (M1/M2/M3) and Intel devices with system notification support.
-              </p>
-            </div>
-            <div className="mt-6">
-              <a
-                href="/downloads/prashnasarathi-mac.dmg"
-                download
-                className="w-full py-2.5 text-xs font-semibold text-white bg-rose-500 hover:bg-rose-600 rounded-xl transition-all shadow-md shadow-rose-500/10 cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                Download for macOS
               </a>
             </div>
           </div>

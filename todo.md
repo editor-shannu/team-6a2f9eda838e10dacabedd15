@@ -603,6 +603,21 @@ Medium-Impact Quality of Life
    * *Root Cause*: Hardcoded version configs made it impossible to force update native wrappers or show live update prompts dynamically across Web, Capacitor, and Tauri.
    * *Resolution*: Introduced a MongoDB-backed `AppVersion` model and registered the `POST /api/admin/app-version` management route. Created the "App Updates" tab in the Admin Dashboard to publish release meta, pushing live Socket.IO update notifications to clients. Reconstructed the Download Center to dynamically fetch and display version details and APK download URLs.
 
+3. **Capacitor Native Push Notification Permissions**
+   * *Resolution*: Refactored `AppUpdateChecker.js` to request push notification permissions natively on hybrid mobile startup using `@capacitor/push-notifications`.
+
+4. **Secure Hybrid Google Auth**
+   * *Resolution*: Built a custom fallback modal for Capacitor environments (`frontend/app/auth/page.js`), enabling mobile users to input their email and authenticate when standard Google redirection is blocked by native WebView restrictions.
+
+5. **FAQ Moderation & Deletion Controls**
+   * *Resolution*: Enabled moderators and administrators to delete entire FAQ categories or individual questions directly within the UI. Added a "Delete FAQ" button in the FAQ detail header and a "Delete Question" button inside the feedback area of each FAQ item.
+
+6. **Mobile Branding (Icons & Splash Screen)**
+   * *Resolution*: Replaced default Capacitor branding files under `capacitor-app/resources`. Deleted default Android XML vector template launcher icons to force the compilation to use generated custom PNG launcher icons, and set the adaptive icon background to the dark branding color `#0c0f17`. Re-generated density-specific assets using `cordova-res`.
+
+7. **Combined Download Center & macOS Deprecation**
+   * *Resolution*: Deprecated macOS DMG downloads and updated the `/downloads` page to combine the Web PWA and iOS install options into a clean, single "iOS & Web App (PWA)" card, simplifying the layout to a balanced 3-column configuration.
+
 #### Older Fixes (June 2, 2026)
 
 1. **Firebase Admin User Synchronization & Real-time Pruning**
