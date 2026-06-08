@@ -30,6 +30,8 @@ function SearchPageContent() {
   const [suggestions, setSuggestions] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [aiResponse, setAiResponse] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => {
     const rawQ = searchParams.get('q') || '';
@@ -42,18 +44,35 @@ function SearchPageContent() {
     } else {
       setResults([]);
       setTotal(0);
+      setAiResponse(null);
     }
     api.get('/search/suggestions').then(d => setSuggestions(d.suggestions || [])).catch(() => {});
   }, [searchParams]);
+
+  const fetchAiAnswer = async (q) => {
+    setAiResponse(null);
+    setAiLoading(true);
+    try {
+      const data = await api.get('/search/ai', { q });
+      setAiResponse(data);
+    } catch (err) {
+      console.error(err);
+      setAiResponse(null);
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const performSearch = async (q, t) => {
     const sanitized = q.trim().substring(0, 100).replace(/[\u0000-\u001F\u007F-\u009F]/g, "").replace(/[<>]/g, "");
     if (!sanitized) {
       setResults([]);
       setTotal(0);
+      setAiResponse(null);
       return;
     }
     setLoading(true);
+    fetchAiAnswer(sanitized);
     try {
       const data = await api.get('/search', { q: sanitized, type: t });
       setResults(data.results || []);
@@ -153,6 +172,92 @@ function SearchPageContent() {
             <h3 className="text-base font-bold text-[var(--color-text)] bg-clip-text text-transparent bg-gradient-to-r from-[var(--color-primary)] to-purple-400">Recommended FAQs</h3>
           </div>
           <RecommendedFAQs limit={5} layout="grid" />
+        </div>
+      )}
+
+      {/* AI Assistive Answer Panel */}
+      {query && (aiLoading || aiResponse) && (
+        <div className="mb-8">
+          <div className="relative overflow-hidden rounded-2xl border border-purple-500/20 bg-gradient-to-br from-purple-900/10 via-[var(--color-bg-secondary)] to-indigo-900/10 p-6 shadow-xl shadow-purple-500/5 backdrop-blur-md">
+            {/* Background glowing decorations */}
+            <div className="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-purple-500/10 blur-xl pointer-events-none" />
+            <div className="absolute -left-8 -bottom-8 w-24 h-24 rounded-full bg-indigo-500/10 blur-xl pointer-events-none" />
+            
+            <div className="flex items-center justify-between border-b border-[var(--color-border)]/40 pb-4 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-600 shadow-md">
+                  <span className="text-sm">🤖</span>
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-[var(--color-text)] tracking-wide">
+                    PrashnaSārathi AI Assistant
+                  </h2>
+                  <p className="text-[10px] text-[var(--color-text-secondary)]">Assisted Search & Knowledge Synthesis</p>
+                </div>
+              </div>
+              
+              {aiResponse?.status && (
+                <span className={`text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full border ${
+                  aiResponse.status.toLowerCase().includes('success')
+                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                    : aiResponse.status === 'blocked'
+                    ? 'bg-rose-500/10 text-rose-500 border-rose-500/20'
+                    : 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                }`}>
+                  {aiResponse.status}
+                </span>
+              )}
+            </div>
+
+            {aiLoading ? (
+              <div className="space-y-3 animate-pulse">
+                <div className="h-4 bg-[var(--color-border)]/60 rounded w-1/4" />
+                <div className="h-4 bg-[var(--color-border)]/60 rounded w-full" />
+                <div className="h-4 bg-[var(--color-border)]/60 rounded w-full" />
+                <div className="h-4 bg-[var(--color-border)]/60 rounded w-5/6" />
+              </div>
+            ) : aiResponse ? (
+              <div className="space-y-4">
+                {aiResponse.status === 'blocked' ? (
+                  <div className="text-sm text-rose-500 dark:text-rose-400 font-medium">
+                    ⚠️ {aiResponse.message || 'Please use respectful and appropriate language.'}
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-sm text-[var(--color-text)] leading-relaxed whitespace-pre-wrap">
+                      {aiResponse.answer}
+                    </div>
+                    
+                    {aiResponse.source && (
+                      <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-secondary)] font-medium">
+                        <span className="px-1.5 py-0.5 rounded bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]/50">Source: {aiResponse.source}</span>
+                      </div>
+                    )}
+
+                    {aiResponse.relatedTopics?.length > 0 && (
+                      <div className="border-t border-[var(--color-border)]/30 pt-4 mt-2">
+                        <h4 className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider mb-2">Related Topics</h4>
+                        <div className="flex flex-wrap gap-1.5">
+                          {aiResponse.relatedTopics.map((topic, i) => (
+                            <button
+                              key={i}
+                              onClick={() => {
+                                setQuery(topic);
+                                router.push(`/search?q=${encodeURIComponent(topic)}${type ? `&type=${type}` : ''}`);
+                              }}
+                              className="px-2.5 py-1 text-xs rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border)] hover:bg-[var(--color-primary)] hover:text-white hover:border-[var(--color-primary)] transition-all cursor-pointer font-medium"
+                            >
+                              🔍 {topic}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            ) : null}
+          </div>
         </div>
       )}
 
