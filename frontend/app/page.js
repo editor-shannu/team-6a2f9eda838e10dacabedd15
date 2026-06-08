@@ -378,23 +378,28 @@ export default function HomePage() {
           <main className="lg:col-span-3 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-[var(--color-border)]/50 mb-4">
               <h2 className="text-xs font-semibold text-[var(--color-text)]">
-                {selectedCategory === 'All Categories' ? 'All Frequently Asked Questions' : selectedCategory}
+                {user 
+                  ? (selectedCategory === 'All Categories' ? 'Recommended Frequently Asked Questions' : `Recommended: ${selectedCategory}`)
+                  : (selectedCategory === 'All Categories' ? 'All Frequently Asked Questions' : selectedCategory)
+                }
               </h2>
-              <div className="flex items-center gap-3 text-[10px] text-[var(--color-text-muted)] font-mono">
-                <button
-                  onClick={() => setExpandedFaq('all')}
-                  className="hover:text-[var(--color-text)] transition-colors"
-                >
-                  EXPAND ALL
-                </button>
-                <span>•</span>
-                <button
-                  onClick={() => setExpandedFaq(null)}
-                  className="hover:text-[var(--color-text)] transition-colors"
-                >
-                  COLLAPSE ALL
-                </button>
-              </div>
+              {!user && (
+                <div className="flex items-center gap-3 text-[10px] text-[var(--color-text-muted)] font-mono">
+                  <button
+                    onClick={() => setExpandedFaq('all')}
+                    className="hover:text-[var(--color-text)] transition-colors"
+                  >
+                    EXPAND ALL
+                  </button>
+                  <span>•</span>
+                  <button
+                    onClick={() => setExpandedFaq(null)}
+                    className="hover:text-[var(--color-text)] transition-colors"
+                  >
+                    COLLAPSE ALL
+                  </button>
+                </div>
+              )}
             </div>
 
             {loading ? (
@@ -407,30 +412,10 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
+            ) : user ? (
+              <RecommendedFAQs limit={20} layout="grid" category={selectedCategory} />
             ) : (
               <div className="flex flex-col gap-3">
-                {selectedCategory === 'All Categories' && user && (
-                  <div className="mb-4 p-4 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-md">
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">💡</span>
-                        <h3 className="text-xs font-bold text-[var(--color-text)] font-mono uppercase tracking-wider">
-                          {user.currentPhase ? 'Recommended For Your Phase' : 'Recommended For You'}
-                        </h3>
-                      </div>
-                      {!user.currentPhase && (
-                        <Link
-                          href="/auth?mode=login"
-                          className="text-[9px] font-mono font-semibold text-[var(--color-primary)] border border-[var(--color-primary)]/25 rounded px-2 py-0.5 hover:bg-[var(--color-primary)]/10 transition-colors shrink-0"
-                        >
-                          SET PHASE →
-                        </Link>
-                      )}
-                    </div>
-                    <RecommendedFAQs limit={4} layout="grid" />
-                  </div>
-                )}
-                
                 {filteredFAQs.map((faq, faqIdx) => {
                   const isExpanded = expandedFaq === faq._id || expandedFaq === 'all';
                   const displayFaqIdx = String(faqIdx + 1).padStart(2, '0');
@@ -575,7 +560,7 @@ export default function HomePage() {
               </div>
             )}
 
-            {!loading && filteredFAQs.length === 0 && (
+            {!loading && !user && filteredFAQs.length === 0 && (
               <div className="text-center py-12 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-md text-[var(--color-text-secondary)] text-xs">
                 No FAQs found in this category.
               </div>

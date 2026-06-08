@@ -157,8 +157,20 @@ exports.createQuestion = async (req, res, next) => {
       }
     }
 
+    const isModOrAdmin = req.user && (req.user.role === 'admin' || req.user.role === 'moderator');
+    const responseObj = populated.toObject();
+    if (responseObj.isAnonymous && !isModOrAdmin) {
+      responseObj.author = {
+        _id: 'anonymous',
+        username: 'Anonymous Student',
+        displayName: 'Anonymous Student',
+        avatar: null,
+        reputation: 0,
+      };
+    }
+
     res.status(201).json({
-      question: populated,
+      question: responseObj,
       alreadyAsked: existingQuestion ? {
         isAlreadyAsked: true,
         scopeMatch: existingQuestion.scopeMatch,
@@ -296,7 +308,7 @@ exports.getQuestions = async (req, res, next) => {
     const withOwner = questions.map(q => {
       const authorId = q.author && q.author._id ? q.author._id.toString() : null;
       const isAuthor = currentUserId && authorId && currentUserId === authorId;
-      const anonymized = q.isAnonymous && !isAuthor && !isModOrAdmin ? {
+      const anonymized = q.isAnonymous ? {
         ...q.toObject(),
         author: {
           _id: 'anonymous',
@@ -360,7 +372,7 @@ exports.getQuestion = async (req, res, next) => {
       }
     }
 
-    if (question.isAnonymous && !isModOrAdmin && !isAuthor) {
+    if (question.isAnonymous) {
       question.author = {
         _id: 'anonymous',
         username: 'Anonymous Student',
@@ -434,7 +446,18 @@ exports.updateQuestion = async (req, res, next) => {
       .populate('author', 'username displayName avatar reputation')
       .populate('tags', 'name color');
     await indexQuestion(updated);
-    res.json({ question: updated });
+
+    const responseObj = updated.toObject();
+    if (responseObj.isAnonymous) {
+      responseObj.author = {
+        _id: 'anonymous',
+        username: 'Anonymous Student',
+        displayName: 'Anonymous Student',
+        avatar: null,
+        reputation: 0,
+      };
+    }
+    res.json({ question: responseObj });
   } catch (err) {
     next(err);
   }
@@ -536,9 +559,8 @@ exports.getSimilarQuestions = async (req, res, next) => {
       .select('title upvotes answerCount viewCount tagNames isAnonymous')
       .populate('author', 'username displayName');
 
-    const isModOrAdmin = req.user && (req.user.role === 'admin' || req.user.role === 'moderator');
     const anonymized = similar.map(q => {
-      if (q.isAnonymous && !isModOrAdmin) {
+      if (q.isAnonymous) {
         return {
           ...q.toObject(),
           author: { _id: 'anonymous', username: 'Anonymous Student', displayName: 'Anonymous Student' },
@@ -731,10 +753,6 @@ exports.escalateQuestion = async (req, res, next) => {
       throw new AppError('Question already escalated', 400);
     }
 
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    if (question.createdAt > twentyFourHoursAgo) {
-      throw new AppError('Question cannot be escalated within 24 hours of creation', 400);
-    }
 
     const Answer = require('../models/Answer');
     const otherAnswersCount = await Answer.countDocuments({

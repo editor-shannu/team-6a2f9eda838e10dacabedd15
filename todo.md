@@ -829,3 +829,17 @@ All code changes have been committed and pushed to `main` on GitHub. Reload the 
    * *Resolution*: Increased the baseline font size to `16.5px` inside `frontend/styles/globals.css` for a system-wide typography scale enhancement. Restructured all administration tables with `overflow-x-auto` wrappers and explicit minimum widths to maintain readability on mobile viewports.
 4. **Architectural Readme Updates**
    * *Resolution*: Cleaned the root `README.md` directory map to reflect the native app codebase deprecations. Created dedicated `README.md` files inside `/frontend` and `/backend` describing current component responsibilities, operations, and caching/search mechanics.
+
+#### Homepage Optimization, Anonymity Hardening, and Escalation (June 8, 2026 — Round 2)
+
+1. **Conditional Homepage Customization**
+   * *Resolution*: Refactored `frontend/app/page.js` to conditionally render:
+     - Guest users: Display all FAQs.
+     - Logged-in users: Display Recommended FAQs filtered by the selected sidebar category, removing the nested container to present a clean, personalized dashboard.
+   * *RecommendedFAQs*: Updated the component to accept the `category` prop, allowing client-side category filtering of recommended FAQs.
+
+2. **Universal Identity Anonymization**
+   * *Resolution*: Modified `backend/controllers/questionController.js` endpoints (`getQuestions`, `getQuestion`, `updateQuestion`, and `getSimilarQuestions`) to unconditionally strip the author's real identity and replace it with "Anonymous Student" when the question is anonymous, hiding it for all roles (including admins and moderators) in the UI.
+
+3. **Escalation Eligibility & Immediate Triggering**
+   * *Resolution*: Removed the arbitrary 24-hour escalation time-lock restriction on the backend (`escalateQuestion` controller) and frontend pages (`QuestionCard.js` and `questions/[id]/page.js`), enabling the "Escalate" button immediately if the question has no answers from other users. Checked `question.isOwner` to ensure authors can trigger the escalation flow even when their name is masked.

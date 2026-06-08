@@ -81,11 +81,11 @@ export default function QuestionCard({ question, absoluteDate = false }) {
 
   const canEscalate = () => {
     if (!user) return false;
-    const isOwner = question.author && (question.author._id === user._id || question.author._id === user.id);
+    const isOwner = question.isOwner || (question.author && (question.author._id === user._id || question.author._id === user.id));
     if (!isOwner) return false;
     if (question.isEscalated || question.resolutionStatus === 'escalated') return false;
-    const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
-    return new Date(question.createdAt).getTime() < twentyFourHoursAgo;
+    if (question.answerCount > 0) return false;
+    return true;
   };
 
   const handleEscalate = async (e) => {

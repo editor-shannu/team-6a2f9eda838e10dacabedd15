@@ -296,7 +296,7 @@ export default function QuestionDetailPage() {
   const canEscalate = () => {
     if (!user) return false;
     // Escalate must show to users who raised the question only
-    const isOwner = question.author && (question.author._id === user._id || question.author === user._id);
+    const isOwner = question.isOwner || (question.author && (question.author._id === user._id || question.author === user._id));
     if (!isOwner) return false;
     if (question.isEscalated || question.resolutionStatus === 'escalated') return false;
 
@@ -304,8 +304,7 @@ export default function QuestionDetailPage() {
     const hasOtherAnswers = answers.some(a => a.author && a.author._id !== user._id && !a.isDeleted);
     if (hasOtherAnswers) return false;
 
-    const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
-    return new Date(question.createdAt).getTime() < twentyFourHoursAgo;
+    return true;
   };
 
   const handleDelete = async () => {
