@@ -2,7 +2,35 @@ const User = require('../models/User');
 const Answer = require('../models/Answer');
 const { getIO } = require('../socket');
 
+const recalculateSpurtiPoints = async () => {
+  try {
+    const answersGrouped = await Answer.aggregate([
+      { $match: { isAccepted: true, isDeleted: { $ne: true }, status: { $ne: 'deleted' } } },
+      { $group: { _id: '$author', count: { $sum: 1 } } }
+    ]);
+
+    const userSpurtiMap = {};
+    for (const item of answersGrouped) {
+      if (item._id) {
+        userSpurtiMap[item._id.toString()] = item.count * 10;
+      }
+    }
+
+    const users = await User.find({ isBanned: { $ne: true } }).select('_id spurtiPoints');
+    for (const u of users) {
+      const calculatedSp = userSpurtiMap[u._id.toString()] || 0;
+      const currentSp = u.spurtiPoints || 0;
+      if (currentSp !== calculatedSp) {
+        await User.updateOne({ _id: u._id }, { $set: { spurtiPoints: calculatedSp } });
+      }
+    }
+  } catch (err) {
+    console.error('Failed to recalculate Spurti Points:', err);
+  }
+};
+
 const getLeaderboardData = async () => {
+  await recalculateSpurtiPoints();
   // Primary: users who resolved doubts (accepted answers or solved-my-doubt votes)
   let leaderboard = await Answer.aggregate([
     { $match: { isDeleted: { $ne: true }, status: { $ne: 'deleted' }, $or: [{ isAccepted: true }, { solvedMyDoubtCount: { $gt: 0 } }] } },

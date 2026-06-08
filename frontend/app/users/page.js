@@ -268,7 +268,7 @@ export default function CommunityPage() {
                         <th className="px-6 py-4 font-bold text-center">Resolved Doubts</th>
                         <th className="px-6 py-4 font-bold text-center">Solved Upvotes</th>
                         <th className="px-6 py-4 font-bold text-center">Reputation</th>
-                        <th className="px-6 py-4 font-bold hidden sm:table-cell">Badges</th>
+
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[var(--color-border)]/30 text-sm text-[var(--color-text-secondary)]">
@@ -313,15 +313,7 @@ export default function CommunityPage() {
                           <td className="px-6 py-4 text-center font-semibold text-[var(--color-text)]">
                             {row.user.reputation}
                           </td>
-                          <td className="px-6 py-4 hidden sm:table-cell">
-                            <div className="flex flex-wrap gap-1">
-                              {row.user.badges?.slice(0, 3).map(badge => (
-                                <span key={badge} className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                                  {badge}
-                                </span>
-                              )) || <span className="text-xs text-[var(--color-text-muted)]">—</span>}
-                            </div>
-                          </td>
+
                         </tr>
                       ))}
                     </tbody>
@@ -396,11 +388,6 @@ export default function CommunityPage() {
                       <p className="text-sm font-extrabold text-[var(--color-text)]">{mod.reputation || 0}</p>
                     </div>
                     <div className="flex flex-wrap gap-1 justify-end max-w-[60%]">
-                      {mod.badges?.slice(0, 2).map(badge => (
-                        <span key={badge} className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                          {badge}
-                        </span>
-                      ))}
                     </div>
                   </div>
 
