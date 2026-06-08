@@ -791,13 +791,21 @@ exports.escalateQuestion = async (req, res, next) => {
       Notification.create({
         recipient: mod._id,
         type: 'escalation',
-        title: 'Question escalated - needs attention',
+        title: '⚠️ Question escalated - needs attention',
         message: `Question "${question.title}" was escalated by the author: ${reason || 'No response received within 24 hours'}`,
         link: `/questions/${question._id}`,
         referenceType: 'Question',
         reference: question._id,
       })
     ));
+
+    // Emit real-time update to admin panel
+    try {
+      const { emitToAdmin } = require('../socket');
+      emitToAdmin('moderation:updated', { action: 'question_escalated', questionId: question._id });
+    } catch (socketErr) {
+      console.error('Socket notification error in escalateQuestion:', socketErr.message);
+    }
 
     res.json({ message: 'Question escalated', question });
   } catch (err) {

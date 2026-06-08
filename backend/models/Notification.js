@@ -25,6 +25,7 @@ const notificationSchema = new mongoose.Schema({
       'anomaly',
       'escalation',
       'escalation_resolved',
+      'spurti_points',
     ],
     required: true,
   },

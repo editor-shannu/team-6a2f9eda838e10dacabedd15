@@ -301,6 +301,17 @@ exports.acceptAnswer = async (req, res, next) => {
         referenceType: 'Answer',
         referenceId: answer._id
       });
+
+      // Notify the answer author about Spurti Points earned
+      await Notification.create({
+        recipient: authorUser._id,
+        type: 'spurti_points',
+        title: '🎉 You earned Spurti Points!',
+        message: `+1 Sp awarded — your answer on "${question.title}" was accepted.`,
+        link: `/questions/${question._id}`,
+        referenceType: 'Answer',
+        reference: answer._id,
+      });
     }
 
     await Notification.create({
