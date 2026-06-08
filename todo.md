@@ -797,3 +797,24 @@ Medium-Impact Quality of Life
    *Resolution*: Refined `backend/controllers/questionController.js` to only return matches on exact titles or high‑similarity matches (both a matching title word *and* a matching tag). Tag‑only matches no longer trigger the warning.
 
 All code changes have been committed and pushed to `main` on GitHub. Reload the page (Ctrl+F5) to see the updates.
+
+#### Latest Fixes (June 8, 2026 — SP System Integrity & Data Sync)
+
+1. **Spurti Points Source-of-Truth Fix**
+   * *Root Cause*: `leaderboardService.recalculateSpurtiPoints` was overwriting `User.spurtiPoints` with a raw count of accepted answers, discarding the 10-base points and any other awarded credits from the log ledger.
+   * *Resolution*: Rewrote `recalculateSpurtiPoints` to derive the correct SP balance from a `SpurtiPointLog` aggregate sum — the authoritative ledger — preserving all historical credits and deductions.
+
+2. **Base Spurti Points on New User Registration**
+   * *Root Cause*: New users joining via email or Google sign-in received 0 SP initially; the base 10-point credit was only applied retroactively during the server startup cleanup run.
+   * *Resolution*: Updated `authController.js` (`register` and `googleLogin`) to set `spurtiPoints: 10` and immediately create a `SpurtiPointLog` entry ("Base Spurti Points credited on account registration") at account creation time. Works for all signup flows.
+
+3. **User answerCount Stat Sync on Answer Deletion**
+   * *Root Cause*: `User.answerCount` was incremented when an answer was created but never decremented when deleted (by user, admin rejection, or cascade question deletion), causing the profile to show stale inflated counts with no visible answers.
+   * *Resolution*:
+     - `answerController.deleteAnswer`: decrements `User.answerCount` for the answer's author on soft-delete.
+     - `adminController.rejectPost`: for question rejection, finds all active answers first, decrements each author's count; for single-answer rejection, decrements that author's count.
+     - `questionController.deleteQuestion`: gathers all non-deleted answers before cascading, then decrements each author's count.
+
+4. **Startup Repair Migrations in cleanup.js**
+   * Added `User.answerCount` resync from live non-deleted Answer counts on every server startup (one-time correction for existing stale data).
+   * Added `User.spurtiPoints` resync from `SpurtiPointLog` aggregate totals on every startup (corrects users whose SP was corrupted by the old raw-count recalculation).
