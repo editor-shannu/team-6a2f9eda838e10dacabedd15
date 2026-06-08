@@ -10,7 +10,7 @@
 - [x] Ask questions (title, body, tags, anonymous option)
 - [x] Answer questions (markdown, confidence levels)
 - [x] Voting (upvote/downvote on questions and answers)
-- [x] Accept answer (moderators/admins only, +15 rep)
+- [x] Accept answer (moderators/admins only, +1 Sp)
 - [x] Me Too button (bump question priority, real-time updates)
 - [x] Solved My Doubt button (on answers, real-time updates)
 - [x] Confidence levels on answers (🤔 "I think so" / 👍 "Pretty sure" / 💯 "I know this")
@@ -39,7 +39,7 @@
 ### User System
 - [x] Registration / Login / Logout
 - [x] JWT-based authentication
-- [x] User profiles (avatar, bio, reputation, badges)
+- [x] User profiles (avatar, bio, spurtiPoints, badges)
 - [x] User profile editing (modify display name, bio, and upload custom avatars with FormData support)
 - [x] Saved questions with notes and custom tags
 - [x] Saved FAQs with notes and custom tags
@@ -56,7 +56,7 @@
 - [x] Verify / Mark outdated FAQ questions
 - [x] Accept answer on any question
 - [x] Bulk email broadcasting to all active users
-- [x] Live application version management and socket-driven in-app updates
+- [x] Unified PWA distribution and socket-driven real-time updates
 - [x] Unified escalated student query queue, resolution workflow, real-time socket sync, and audit logging.
 - [x] Spurti Points (Sp) tracking dashboard and transaction logs for administrators.
 - [x] Strict rolling hourly limit (max 5) on student escalations and duplicate topic escalation checks.

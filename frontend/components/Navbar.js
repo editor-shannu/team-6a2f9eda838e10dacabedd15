@@ -89,7 +89,7 @@ export default function Navbar({ onSearch }) {
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                   </svg>
-                  <span>Downloads</span>
+                  <span>Install App</span>
                 </Link>
               </div>
             </div>
@@ -164,7 +164,7 @@ export default function Navbar({ onSearch }) {
                         <div className="absolute right-0 mt-2 w-56 bg-[var(--color-bg-secondary)] rounded-md shadow-xl border border-[var(--color-border)] z-20 py-1.5 animate-scale-in">
                           <div className="px-4 py-2 border-b border-[var(--color-border)]">
                             <p className="text-xs font-semibold text-[var(--color-text)]">{user.displayName || user.username}</p>
-                            <p className="text-[10px] text-[var(--color-text-muted)] mt-0.5 font-mono">{user.reputation} reputation</p>
+                            <p className="text-[10px] text-amber-500 mt-0.5 font-semibold">⚡ {user.spurtiPoints || 0} Sp</p>
                           </div>
                           <Link href={`/users/${user.username}`} className="flex items-center gap-2 px-4 py-2 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text)] transition-colors" onClick={() => setProfileOpen(false)}>
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
@@ -266,7 +266,7 @@ export default function Navbar({ onSearch }) {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                     </svg>
-                    <span>Downloads</span>
+                    <span>Install App</span>
                   </Link>
                 </div>
               </div>

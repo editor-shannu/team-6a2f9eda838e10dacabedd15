@@ -155,7 +155,7 @@ export default function CommunityPage() {
                       {leaderboard[1].user.displayName || leaderboard[1].user.username}
                     </Link>
                     <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">@{leaderboard[1].user.username}</p>
-                    <div className="mt-4 pt-4 border-t border-[var(--color-border)]/40 grid grid-cols-3 gap-1 text-center">
+                    <div className="mt-4 pt-4 border-t border-[var(--color-border)]/40 grid grid-cols-2 gap-1 text-center">
                       <div>
                         <p className="text-sm font-extrabold text-[var(--color-text)]">{leaderboard[1].resolvedCount}</p>
                         <p className="text-[8px] uppercase tracking-wider text-[var(--color-text-muted)] font-bold">Resolved</p>
@@ -163,10 +163,6 @@ export default function CommunityPage() {
                       <div>
                         <p className="text-sm font-extrabold text-amber-500">{leaderboard[1].user.spurtiPoints || 0}</p>
                         <p className="text-[8px] uppercase tracking-wider text-[var(--color-text-muted)] font-bold">Sp Points</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-extrabold text-[var(--color-text)]">{leaderboard[1].user.reputation}</p>
-                        <p className="text-[8px] uppercase tracking-wider text-[var(--color-text-muted)] font-bold">Reputation</p>
                       </div>
                     </div>
                   </div>
@@ -196,7 +192,7 @@ export default function CommunityPage() {
                       {leaderboard[0].user.displayName || leaderboard[0].user.username}
                     </Link>
                     <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">@{leaderboard[0].user.username}</p>
-                    <div className="mt-5 pt-5 border-t border-[var(--color-border)]/40 grid grid-cols-3 gap-1 text-center">
+                    <div className="mt-5 pt-5 border-t border-[var(--color-border)]/40 grid grid-cols-2 gap-1 text-center">
                       <div>
                         <p className="text-lg font-extrabold text-[var(--color-primary)]">{leaderboard[0].resolvedCount}</p>
                         <p className="text-[8px] uppercase tracking-wider text-[var(--color-text-muted)] font-bold">Resolved</p>
@@ -204,10 +200,6 @@ export default function CommunityPage() {
                       <div>
                         <p className="text-lg font-extrabold text-amber-500">{leaderboard[0].user.spurtiPoints || 0}</p>
                         <p className="text-[8px] uppercase tracking-wider text-[var(--color-text-muted)] font-bold">Sp Points</p>
-                      </div>
-                      <div>
-                        <p className="text-lg font-extrabold text-[var(--color-text)]">{leaderboard[0].user.reputation}</p>
-                        <p className="text-[8px] uppercase tracking-wider text-[var(--color-text-muted)] font-bold">Reputation</p>
                       </div>
                     </div>
                   </div>
@@ -237,7 +229,7 @@ export default function CommunityPage() {
                       {leaderboard[2].user.displayName || leaderboard[2].user.username}
                     </Link>
                     <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">@{leaderboard[2].user.username}</p>
-                    <div className="mt-4 pt-4 border-t border-[var(--color-border)]/40 grid grid-cols-3 gap-1 text-center">
+                    <div className="mt-4 pt-4 border-t border-[var(--color-border)]/40 grid grid-cols-2 gap-1 text-center">
                       <div>
                         <p className="text-sm font-extrabold text-[var(--color-text)]">{leaderboard[2].resolvedCount}</p>
                         <p className="text-[8px] uppercase tracking-wider text-[var(--color-text-muted)] font-bold">Resolved</p>
@@ -245,10 +237,6 @@ export default function CommunityPage() {
                       <div>
                         <p className="text-sm font-extrabold text-amber-500">{leaderboard[2].user.spurtiPoints || 0}</p>
                         <p className="text-[8px] uppercase tracking-wider text-[var(--color-text-muted)] font-bold">Sp Points</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-extrabold text-[var(--color-text)]">{leaderboard[2].user.reputation}</p>
-                        <p className="text-[8px] uppercase tracking-wider text-[var(--color-text-muted)] font-bold">Reputation</p>
                       </div>
                     </div>
                   </div>
@@ -267,8 +255,6 @@ export default function CommunityPage() {
                         <th className="px-6 py-4 font-bold text-center">Spurti Points (Sp)</th>
                         <th className="px-6 py-4 font-bold text-center">Resolved Doubts</th>
                         <th className="px-6 py-4 font-bold text-center">Solved Upvotes</th>
-                        <th className="px-6 py-4 font-bold text-center">Reputation</th>
-
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[var(--color-border)]/30 text-sm text-[var(--color-text-secondary)]">
@@ -309,9 +295,6 @@ export default function CommunityPage() {
                           </td>
                           <td className="px-6 py-4 text-center">
                             👍 {row.totalSolvedVotes}
-                          </td>
-                          <td className="px-6 py-4 text-center font-semibold text-[var(--color-text)]">
-                            {row.user.reputation}
                           </td>
 
                         </tr>
@@ -381,14 +364,9 @@ export default function CommunityPage() {
                     )}
                   </div>
 
-                  {/* Stats & Badges */}
+                  {/* Badges / Info */}
                   <div className="mt-4 pt-4 border-t border-[var(--color-border)]/40 flex items-center justify-between text-xs">
-                    <div>
-                      <span className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider font-bold">Reputation</span>
-                      <p className="text-sm font-extrabold text-[var(--color-text)]">{mod.reputation || 0}</p>
-                    </div>
-                    <div className="flex flex-wrap gap-1 justify-end max-w-[60%]">
-                    </div>
+                    <span className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider font-bold">Active Moderator</span>
                   </div>
 
                 </div>

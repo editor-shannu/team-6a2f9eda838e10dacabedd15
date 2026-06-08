@@ -144,9 +144,6 @@ export default function UserProfilePage() {
               
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 text-xs text-[var(--color-text-muted)] font-medium">
                 <span className="flex items-center gap-1">
-                  <span className="font-bold text-[var(--color-primary)] text-sm">{user.reputation}</span> reputation
-                </span>
-                <span className="flex items-center gap-1">
                   <span className="font-bold text-amber-500 text-sm">⚡ {user.spurtiPoints || 0}</span> Sp
                 </span>
                 {user.currentPhase && (
@@ -485,10 +482,6 @@ export default function UserProfilePage() {
                   <p className="font-extrabold text-[var(--color-text)]">{user.answerCount || 0} verified answers</p>
                   <p className="text-[9px] text-[var(--color-text-muted)]">1 SP credited per accepted answer</p>
                 </div>
-                <div>
-                  <p className="font-extrabold text-[var(--color-text)]">{user.reputation || 0} reputation points</p>
-                  <p className="text-[9px] text-[var(--color-text-muted)]">Earned from community feedback</p>
-                </div>
               </div>
             </div>
 
@@ -514,7 +507,7 @@ export default function UserProfilePage() {
             <p className="text-[10px] uppercase font-bold tracking-wider text-[var(--color-text-muted)] mb-3">What to do next</p>
             <ul className="text-xs text-[var(--color-text-secondary)] space-y-2 list-disc pl-4 font-medium">
               <li>Answer questions in the community to earn <strong className="text-[var(--color-text)] font-extrabold">+1 Sp</strong> for each verified (accepted) answer.</li>
-              <li>Provide high-quality and genuine replies to gain accepted solutions and reputation points.</li>
+              <li>Provide high-quality and genuine replies to gain accepted solutions.</li>
               <li>Check your Spurti Bank Statement regularly to monitor your real-time balance and contribution history.</li>
             </ul>
           </div>

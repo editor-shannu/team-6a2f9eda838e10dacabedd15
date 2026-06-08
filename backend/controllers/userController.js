@@ -14,9 +14,22 @@ exports.getUserProfile = async (req, res, next) => {
     const user = await User.findOne({ username: { $regex: new RegExp(`^${safeUsername}$`, 'i') } });
     if (!user || user.isBanned || user.status === 'blocked') throw new AppError('User not found', 404);
 
-    const [questions, answers, questionLikes, answerLikes, questionVotes, answerVotes, savedQuestionsCount, savedFaqsCount] = await Promise.all([
+    const [questions, answersCountResult, questionLikes, answerLikes, questionVotes, answerVotes, savedQuestionsCount, savedFaqsCount] = await Promise.all([
       Question.countDocuments({ author: user._id, isDeleted: false }),
-      Answer.countDocuments({ author: user._id, isDeleted: false }),
+      Answer.aggregate([
+        { $match: { author: user._id, isDeleted: { $ne: true } } },
+        {
+          $lookup: {
+            from: 'questions',
+            localField: 'question',
+            foreignField: '_id',
+            as: 'qDoc'
+          }
+        },
+        { $unwind: '$qDoc' },
+        { $match: { 'qDoc.isDeleted': { $ne: true } } },
+        { $count: 'count' }
+      ]),
       Question.aggregate([
         { $match: { author: user._id, isDeleted: false } },
         { $group: { _id: null, total: { $sum: '$upvotes' } } }
@@ -37,9 +50,16 @@ exports.getUserProfile = async (req, res, next) => {
       SavedFAQ.countDocuments({ user: user._id })
     ]);
 
+    const answers = answersCountResult[0]?.count || 0;
     const totalLikes = (questionLikes[0]?.total || 0) + (answerLikes[0]?.total || 0);
     const totalVotes = (questionVotes[0]?.up || 0) + (questionVotes[0]?.down || 0) + (answerVotes[0]?.up || 0) + (answerVotes[0]?.down || 0);
     const totalBookmarks = savedQuestionsCount + savedFaqsCount;
+
+    if (user.answerCount !== answers || user.questionCount !== questions) {
+      await User.updateOne({ _id: user._id }, { $set: { answerCount: answers, questionCount: questions } });
+      user.answerCount = answers;
+      user.questionCount = questions;
+    }
 
     res.json({
       user: {
@@ -86,17 +106,57 @@ exports.getUserAnswers = async (req, res, next) => {
     if (!user || user.isBanned || user.status === 'blocked') throw new AppError('User not found', 404);
 
     const { page, limit, skip } = paginate(req.query.page, req.query.limit);
-    const [answers, total] = await Promise.all([
-      Answer.find({ author: user._id, isDeleted: false })
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .populate({ path: 'question', select: 'title slug', match: { isDeleted: false } })
-        .select('body upvotes isAccepted createdAt'),
-      Answer.countDocuments({ author: user._id, isDeleted: false }),
+
+    const baseQuery = [
+      { $match: { author: user._id, isDeleted: { $ne: true } } },
+      {
+        $lookup: {
+          from: 'questions',
+          localField: 'question',
+          foreignField: '_id',
+          as: 'questionDoc'
+        }
+      },
+      { $unwind: '$questionDoc' },
+      { $match: { 'questionDoc.isDeleted': { $ne: true } } }
+    ];
+
+    const [totalResult, answers] = await Promise.all([
+      Answer.aggregate([...baseQuery, { $count: 'count' }]),
+      Answer.aggregate([
+        ...baseQuery,
+        { $sort: { createdAt: -1 } },
+        { $skip: skip },
+        { $limit: limit },
+        {
+          $project: {
+            body: 1,
+            upvotes: 1,
+            isAccepted: 1,
+            createdAt: 1,
+            question: {
+              _id: { $arrayElemAt: ['$questionDoc._id', 0] },
+              title: { $arrayElemAt: ['$questionDoc.title', 0] },
+              slug: { $arrayElemAt: ['$questionDoc.slug', 0] }
+            }
+          }
+        }
+      ])
     ]);
 
-    res.json({ answers: answers.filter(a => a.question), pagination: buildPaginationMeta(total, page, limit) });
+    const total = totalResult[0]?.count || 0;
+    
+    // Convert to standard format that matches populate expectations in frontend
+    const formattedAnswers = answers.map(a => ({
+      ...a,
+      question: {
+        _id: a.question?._id || a.question,
+        title: a.question?.title,
+        slug: a.question?.slug
+      }
+    }));
+
+    res.json({ answers: formattedAnswers, pagination: buildPaginationMeta(total, page, limit) });
   } catch (err) {
     next(err);
   }
