@@ -31,6 +31,7 @@ export default function AdminPage() {
   const [spurtiPage, setSpurtiPage] = useState(1);
   const [spurtiPagination, setSpurtiPagination] = useState({ page: 1, pages: 1 });
   const [spurtiSearch, setSpurtiSearch] = useState('');
+  const [repairRunning, setRepairRunning] = useState(false);
   const socket = useSocket();
 
   const [moderationQueue, setModerationQueue] = useState({ questions: [], answers: [] });
@@ -317,6 +318,28 @@ export default function AdminPage() {
     }
   };
 
+  const handleRunRepair = async () => {
+    if (!confirm('Run data repair? This will fix SP logs, spurtiPoints, and answerCount for ALL users.')) return;
+    setRepairRunning(true);
+    try {
+      const res = await api.post('/admin/repair-data');
+      const r = res.results || {};
+      toast.success(
+        `Repair done! Retro SP logs: ${r.retroLogs}, Base credits: ${r.baseCredited}, ` +
+        `SP resynced: ${r.spResynced}, answerCount fixed: ${r.answerCountSynced}`
+      );
+      // Refresh dashboard stats
+      if (tab === 'dashboard') {
+        fetchDashboard();
+        fetchDeepData();
+      }
+    } catch (err) {
+      toast.error(err.message || 'Repair failed');
+    } finally {
+      setRepairRunning(false);
+    }
+  };
+
   const handleRemoveBounce = async (id) => {
     try {
       await api.delete(`/admin/emails/bounces/${id}`);
@@ -593,6 +616,22 @@ export default function AdminPage() {
               </div>
             ))}
           </div>
+          {/* Data Repair Banner — admin only */}
+          {user?.role === 'admin' && (
+            <div className="flex items-center gap-3 mb-6 p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl">
+              <div className="flex-1">
+                <p className="text-sm font-bold text-[var(--color-text)]">🔧 Data Integrity Repair</p>
+                <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">Backfills SP logs for old accepted answers, ensures base 10 Sp for all users, resyncs spurtiPoints and answerCount. Run once after deployment.</p>
+              </div>
+              <button
+                onClick={handleRunRepair}
+                disabled={repairRunning}
+                className="px-4 py-2 text-xs font-bold rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-all disabled:opacity-50 cursor-pointer shrink-0"
+              >
+                {repairRunning ? 'Running...' : 'Run Repair'}
+              </button>
+            </div>
+          )}
           {deepStats && (
             <div className="mt-8 border-t border-[var(--color-border)] pt-8">
               <h2 className="text-xl font-bold text-[var(--color-text)] mb-6">Platform Insights</h2>

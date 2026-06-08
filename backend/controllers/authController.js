@@ -20,6 +20,29 @@ const applyDailyLoginBenefit = (user) => {
   user.lastActive = new Date();
 };
 
+// Ensure every user always has the 10-point base SP credit (safe to call on login)
+const ensureBaseSpurtiPoints = async (userId) => {
+  try {
+    const SpurtiPointLog = require('../models/SpurtiPointLog');
+    const exists = await SpurtiPointLog.findOne({
+      user: userId,
+      reason: 'Base Spurti Points credited on account registration'
+    });
+    if (!exists) {
+      await SpurtiPointLog.create({
+        user: userId,
+        amount: 10,
+        action: 'reward',
+        reason: 'Base Spurti Points credited on account registration',
+      });
+      await User.findByIdAndUpdate(userId, { $inc: { spurtiPoints: 10 } });
+      console.log(`[Auth] Base 10 Sp credited to user ${userId} on login.`);
+    }
+  } catch (spErr) {
+    console.error('[Auth] Failed to ensure base SP:', spErr.message);
+  }
+};
+
 exports.register = async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -78,6 +101,9 @@ exports.login = async (req, res, next) => {
 
     applyDailyLoginBenefit(user);
     await user.save();
+
+    // Silently ensure base Sp exists for this user (catches pre-existing accounts)
+    ensureBaseSpurtiPoints(user._id).catch(() => {});
 
     const token = generateToken(user);
     res.json({ token, user: user.toPublicJSON() });
@@ -290,6 +316,8 @@ exports.googleLogin = async (req, res, next) => {
       if (needsReindex) {
         await indexUser(user);
       }
+      // Silently ensure base Sp exists for this returning Google user
+      ensureBaseSpurtiPoints(user._id).catch(() => {});
       const jwtToken = generateToken(user);
       return res.json({ token: jwtToken, user: user.toPublicJSON() });
     }
@@ -312,6 +340,8 @@ exports.googleLogin = async (req, res, next) => {
       applyDailyLoginBenefit(user);
       await user.save();
       await indexUser(user);
+      // Silently ensure base Sp exists
+      ensureBaseSpurtiPoints(user._id).catch(() => {});
       const jwtToken = generateToken(user);
       return res.json({ token: jwtToken, user: user.toPublicJSON() });
     }

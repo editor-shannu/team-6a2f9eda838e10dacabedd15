@@ -32,7 +32,10 @@ const recalculateSpurtiPoints = async () => {
 };
 
 const getLeaderboardData = async () => {
-  await recalculateSpurtiPoints();
+  // NOTE: spurtiPoints are maintained in real-time via SpurtiPointLog at transaction time.
+  // We do NOT call recalculateSpurtiPoints() here — it was causing SP to be zeroed for
+  // users whose log history hadn't been backfilled yet.
+
   // Primary: users who resolved doubts (accepted answers or solved-my-doubt votes)
   let leaderboard = await Answer.aggregate([
     { $match: { isDeleted: { $ne: true }, status: { $ne: 'deleted' }, $or: [{ isAccepted: true }, { solvedMyDoubtCount: { $gt: 0 } }] } },
