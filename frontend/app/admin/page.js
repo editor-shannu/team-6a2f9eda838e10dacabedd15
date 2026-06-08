@@ -89,6 +89,7 @@ export default function AdminPage() {
       setEmailSubject('');
       setEmailBody('');
       setEmailContentTitle('Admin Broadcast Announcement');
+      fetchEmails();
     } catch (err) {
       toast.error(err.message || 'Failed to enqueue email broadcast');
     } finally {
@@ -467,7 +468,7 @@ export default function AdminPage() {
     tabs.push('moderationQueue', 'auditLogs', 'escalations');
   }
   if (user?.role === 'admin') {
-    tabs.push('siteReports', 'emails', 'broadcast', 'broadcastEmail', 'spurti');
+    tabs.push('siteReports', 'emails', 'broadcast', 'spurti');
   }
   if (user?.role !== 'admin') {
     const uIdx = tabs.indexOf('users');
@@ -505,9 +506,8 @@ export default function AdminPage() {
              t === 'flagged' ? 'Flagged & Reported Content' :
              t === 'auditLogs' ? 'Audit Logs' :
              t === 'siteReports' ? 'Site Reports' :
-             t === 'emails' ? 'Email Queue' :
+             t === 'emails' ? 'Email Queue & Broadcast' :
              t === 'broadcast' ? 'Broadcast Alerts' :
-             t === 'broadcastEmail' ? 'Broadcast Email' :
              t === 'escalations' ? 'Anomalies & Escalations' :
              t === 'spurti' ? 'Spurti Points Tracker' :
              t.charAt(0).toUpperCase() + t.slice(1)}
@@ -1359,9 +1359,9 @@ export default function AdminPage() {
         <div className="space-y-6">
           <div className="card p-5 bg-gradient-to-r from-indigo-500/5 to-cyan-500/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h3 className="font-bold text-lg text-[var(--color-text)]">Email Notification System</h3>
+              <h3 className="font-bold text-lg text-[var(--color-text)]">Email Notification & Broadcast System</h3>
               <p className="text-xs text-[var(--color-text-secondary)] mt-1">
-                Monitor the outbound queue, view statistics, force processing, and manage permanent bounces.
+                Monitor the outbound queue, view statistics, manage permanent bounces, and broadcast announcements to all users.
               </p>
             </div>
             <div className="flex gap-2">
@@ -1409,97 +1409,161 @@ export default function AdminPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Email Queue Section */}
-            <div className="card lg:col-span-2 overflow-hidden flex flex-col justify-between">
-              <div>
-                <div className="p-4 border-b border-[var(--color-border)]">
-                  <h4 className="font-bold text-[var(--color-text)] text-sm">Active Queue Logs</h4>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left min-w-[700px]">
-                    <thead>
-                      <tr className="bg-gray-50 dark:bg-gray-800/50 border-b border-[var(--color-border)]">
-                        <th className="px-4 py-2.5 font-semibold text-[var(--color-text)]">To</th>
-                        <th className="px-4 py-2.5 font-semibold text-[var(--color-text)]">Subject</th>
-                        <th className="px-4 py-2.5 font-semibold text-[var(--color-text)]">Status</th>
-                        <th className="px-4 py-2.5 font-semibold text-[var(--color-text)] text-center">Attempts</th>
-                        <th className="px-4 py-2.5 font-semibold text-[var(--color-text)]">Next Retry At</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[var(--color-border)]">
-                      {emails.length === 0 ? (
-                        <tr>
-                          <td colSpan="5" className="text-center p-8 text-[var(--color-text-secondary)]">
-                            No emails in queue.
-                          </td>
+            {/* Left Column: Broadcast Form & Queue Logs */}
+            <div className="lg:col-span-2 space-y-6">
+              
+              {/* Broadcast Email Form */}
+              <div className="card p-6 border border-[var(--color-border)] rounded-2xl shadow-md bg-[var(--color-bg-secondary)] relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-500" />
+                <h4 className="font-bold text-[var(--color-text)] text-sm mb-2 flex items-center gap-2">
+                  <span>📧</span> Send Email Broadcast to All Users
+                </h4>
+                <p className="text-xs text-[var(--color-text-secondary)] mb-4 leading-relaxed">
+                  Compose and enqueue an email to all active, non-banned users registered on the platform. The outbound emails will be enqueued in the delivery system queue.
+                </p>
+                <form onSubmit={handleSendEmailBroadcast} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-[var(--color-text)] mb-1">
+                        Template Header Title
+                      </label>
+                      <input
+                        type="text"
+                        value={emailContentTitle}
+                        onChange={(e) => setEmailContentTitle(e.target.value)}
+                        placeholder="e.g. Admin Broadcast Announcement"
+                        className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-2.5 text-xs text-[var(--color-text)] focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-[var(--color-text)] mb-1">
+                        Email Subject
+                      </label>
+                      <input
+                        type="text"
+                        value={emailSubject}
+                        onChange={(e) => setEmailSubject(e.target.value)}
+                        placeholder="Enter email subject line..."
+                        required
+                        className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-2.5 text-xs text-[var(--color-text)] focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[var(--color-text)] mb-1">
+                      Email Body Message (HTML or Plain Text)
+                    </label>
+                    <textarea
+                      value={emailBody}
+                      onChange={(e) => setEmailBody(e.target.value)}
+                      placeholder="Compose the email body..."
+                      rows={4}
+                      required
+                      className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3 text-xs text-[var(--color-text)] focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={sendingEmail || !emailSubject.trim() || !emailBody.trim()}
+                    className="w-full btn-primary py-2.5 rounded-xl font-bold shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-all duration-200 cursor-pointer text-xs"
+                  >
+                    {sendingEmail ? 'Enqueuing Emails...' : 'Send Broadcast Email Now'}
+                  </button>
+                </form>
+              </div>
+
+              {/* Email Queue Section */}
+              <div className="card overflow-hidden flex flex-col justify-between">
+                <div>
+                  <div className="p-4 border-b border-[var(--color-border)]">
+                    <h4 className="font-bold text-[var(--color-text)] text-sm">Active Queue Logs</h4>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left min-w-[700px]">
+                      <thead>
+                        <tr className="bg-gray-50 dark:bg-gray-800/50 border-b border-[var(--color-border)]">
+                          <th className="px-4 py-2.5 font-semibold text-[var(--color-text)]">To</th>
+                          <th className="px-4 py-2.5 font-semibold text-[var(--color-text)]">Subject</th>
+                          <th className="px-4 py-2.5 font-semibold text-[var(--color-text)]">Status</th>
+                          <th className="px-4 py-2.5 font-semibold text-[var(--color-text)] text-center">Attempts</th>
+                          <th className="px-4 py-2.5 font-semibold text-[var(--color-text)]">Next Retry At</th>
                         </tr>
-                      ) : (
-                        emails.map(email => (
-                          <tr key={email._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30 text-xs">
-                            <td className="px-4 py-3">
-                              <p className="font-medium text-[var(--color-text)]">{email.userName}</p>
-                              <p className="text-[var(--color-text-secondary)]">{email.to}</p>
-                            </td>
-                            <td className="px-4 py-3 max-w-xs truncate" title={email.subject}>
-                              {email.subject}
-                              {email.failReason && (
-                                <p className="text-[10px] text-red-500 font-medium mt-0.5 truncate" title={email.failReason}>
-                                  Err: {email.failReason}
-                                </p>
-                              )}
-                            </td>
-                            <td className="px-4 py-3">
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
-                                email.status === 'sent' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                                email.status === 'pending' ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 animate-pulse' :
-                                email.status === 'bounced' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' :
-                                'bg-gray-500/10 text-gray-600 dark:text-gray-400'
-                              }`}>
-                                {email.status}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-center text-[var(--color-text-secondary)]">
-                              {email.attempts} / {email.maxAttempts}
-                            </td>
-                            <td className="px-4 py-3 text-[var(--color-text-secondary)] text-[10px]">
-                              {email.status === 'pending' ? formatDate(email.nextRetryAt) : 'N/A'}
+                      </thead>
+                      <tbody className="divide-y divide-[var(--color-border)]">
+                        {emails.length === 0 ? (
+                          <tr>
+                            <td colSpan="5" className="text-center p-8 text-[var(--color-text-secondary)]">
+                              No emails in queue.
                             </td>
                           </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                        ) : (
+                          emails.map(email => (
+                            <tr key={email._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30 text-xs">
+                              <td className="px-4 py-3">
+                                <p className="font-medium text-[var(--color-text)]">{email.userName}</p>
+                                <p className="text-[var(--color-text-secondary)]">{email.to}</p>
+                              </td>
+                              <td className="px-4 py-3 max-w-xs truncate" title={email.subject}>
+                                {email.subject}
+                                {email.failReason && (
+                                  <p className="text-[10px] text-red-500 font-medium mt-0.5 truncate" title={email.failReason}>
+                                    Err: {email.failReason}
+                                  </p>
+                                )}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
+                                  email.status === 'sent' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
+                                  email.status === 'pending' ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 animate-pulse' :
+                                  email.status === 'bounced' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' :
+                                  'bg-gray-500/10 text-gray-600 dark:text-gray-400'
+                                }`}>
+                                  {email.status}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-center text-[var(--color-text-secondary)]">
+                                {email.attempts} / {email.maxAttempts}
+                              </td>
+                              <td className="px-4 py-3 text-[var(--color-text-secondary)] text-[10px]">
+                                {email.status === 'pending' ? formatDate(email.nextRetryAt) : 'N/A'}
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
+                {emailPagination.pages > 1 && (
+                  <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--color-border)]">
+                    <button
+                      onClick={() => setEmailPage(p => Math.max(1, p - 1))}
+                      disabled={emailPage === 1}
+                      className="btn-secondary btn-sm disabled:opacity-50 text-xs px-2.5 py-1"
+                    >
+                      Previous
+                    </button>
+                    <span className="text-xs text-[var(--color-text-secondary)]">
+                      Page {emailPage} of {emailPagination.pages}
+                    </span>
+                    <button
+                      onClick={() => setEmailPage(p => Math.min(emailPagination.pages, p + 1))}
+                      disabled={emailPage === emailPagination.pages}
+                      className="btn-secondary btn-sm disabled:opacity-50 text-xs px-2.5 py-1"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
               </div>
-              {emailPagination.pages > 1 && (
-                <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--color-border)]">
-                  <button
-                    onClick={() => setEmailPage(p => Math.max(1, p - 1))}
-                    disabled={emailPage === 1}
-                    className="btn-secondary btn-sm disabled:opacity-50 text-xs px-2.5 py-1"
-                  >
-                    Previous
-                  </button>
-                  <span className="text-xs text-[var(--color-text-secondary)]">
-                    Page {emailPage} of {emailPagination.pages}
-                  </span>
-                  <button
-                    onClick={() => setEmailPage(p => Math.min(emailPagination.pages, p + 1))}
-                    disabled={emailPage === emailPagination.pages}
-                    className="btn-secondary btn-sm disabled:opacity-50 text-xs px-2.5 py-1"
-                  >
-                    Next
-                  </button>
-                </div>
-              )}
             </div>
 
-            {/* Bounces Sidebar */}
-            <div className="card overflow-hidden">
+            {/* Right Column: Bounces Sidebar */}
+            <div className="card overflow-hidden h-fit">
               <div className="p-4 border-b border-[var(--color-border)]">
                 <h4 className="font-bold text-[var(--color-text)] text-sm">Permanent Bounces ({bounces.length})</h4>
               </div>
-              <div className="divide-y divide-[var(--color-border)] max-h-[400px] overflow-y-auto">
+              <div className="divide-y divide-[var(--color-border)] max-h-[600px] overflow-y-auto">
                 {bounces.length === 0 ? (
                   <p className="p-4 text-xs text-center text-[var(--color-text-secondary)]">
                     No permanent bounces registered.
@@ -1531,94 +1595,6 @@ export default function AdminPage() {
               </div>
             </div>
           </div>
-        </div>
-      ) : tab === 'broadcast' && user?.role === 'admin' ? (
-        <div className="card p-6 max-w-2xl mx-auto border border-[var(--color-border)] rounded-2xl shadow-xl bg-[var(--color-bg-secondary)]">
-          <h2 className="text-xl font-bold text-[var(--color-text)] mb-4 flex items-center gap-2">
-            <span>🚨</span> Broadcast Real-time Alert
-          </h2>
-          <p className="text-sm text-[var(--color-text-secondary)] mb-6 leading-relaxed">
-            Send an instant notification alert to all active users on the platform. The alert will pop up on their screen immediately if they are online, and will also be saved in their notification inbox.
-          </p>
-          <form onSubmit={handleSendBroadcastAlert} className="space-y-5">
-            <div>
-              <label className="block text-sm font-semibold text-[var(--color-text)] mb-2">
-                Alert Message
-              </label>
-              <textarea
-                value={broadcastMessage}
-                onChange={(e) => setBroadcastMessage(e.target.value)}
-                placeholder="Type the message to broadcast..."
-                rows={4}
-                required
-                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-4 text-sm text-[var(--color-text)] focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={broadcasting || !broadcastMessage.trim()}
-              className="w-full btn-primary py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2 disabled:opacity-50 transition-all duration-200"
-            >
-              {broadcasting ? 'Broadcasting...' : 'Broadcast Alert Now'}
-            </button>
-          </form>
-        </div>
-      ) : tab === 'broadcastEmail' && user?.role === 'admin' ? (
-        <div className="card p-6 max-w-2xl mx-auto border border-[var(--color-border)] rounded-2xl shadow-xl bg-[var(--color-bg-secondary)] relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-500" />
-          <h2 className="text-xl font-bold text-[var(--color-text)] mb-4 flex items-center gap-2">
-            <span>📧</span> Send Email Broadcast to All Users
-          </h2>
-          <p className="text-sm text-[var(--color-text-secondary)] mb-6 leading-relaxed">
-            Compose and enqueue an email to all active, non-banned users registered on the platform. The outbound emails will be enqueued in the delivery system queue to conform to sending limits.
-          </p>
-          <form onSubmit={handleSendEmailBroadcast} className="space-y-5">
-            <div>
-              <label className="block text-sm font-semibold text-[var(--color-text)] mb-2">
-                Template Header Title
-              </label>
-              <input
-                type="text"
-                value={emailContentTitle}
-                onChange={(e) => setEmailContentTitle(e.target.value)}
-                placeholder="e.g. Admin Broadcast Announcement"
-                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3 text-sm text-[var(--color-text)] focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-[var(--color-text)] mb-2">
-                Email Subject
-              </label>
-              <input
-                type="text"
-                value={emailSubject}
-                onChange={(e) => setEmailSubject(e.target.value)}
-                placeholder="Enter email subject line..."
-                required
-                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3 text-sm text-[var(--color-text)] focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-[var(--color-text)] mb-2">
-                Email Body Message (HTML or Plain Text)
-              </label>
-              <textarea
-                value={emailBody}
-                onChange={(e) => setEmailBody(e.target.value)}
-                placeholder="Compose the email body..."
-                rows={6}
-                required
-                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-4 text-sm text-[var(--color-text)] focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={sendingEmail || !emailSubject.trim() || !emailBody.trim()}
-              className="w-full btn-primary py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2 disabled:opacity-50 transition-all duration-200 cursor-pointer"
-            >
-              {sendingEmail ? 'Enqueuing Emails...' : 'Send Broadcast Email Now'}
-            </button>
-          </form>
         </div>
       ) : tab === 'spurti' && user.role === 'admin' ? (
         <div className="card p-6">
