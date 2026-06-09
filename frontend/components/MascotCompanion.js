@@ -55,7 +55,7 @@ export default function MascotCompanion() {
   // Main evaluation logic for loading state and claiming daily logins
   const checkAndUpdateDailyStreak = () => {
     if (typeof window === 'undefined') return;
-    const stored = localStorage.getItem('prashnasarathi_mascot');
+    const stored = localStorage.getItem('prashnasarathi_mascot_v2');
     
     let currentMascotName = 'Pyro';
     let currentStreak = 1;
@@ -145,7 +145,7 @@ export default function MascotCompanion() {
         activeAccessories: currentAccessories,
         lastLoginDate: todayStr
       };
-      localStorage.setItem('prashnasarathi_mascot', JSON.stringify(updatedData));
+      localStorage.setItem('prashnasarathi_mascot_v2', JSON.stringify(updatedData));
     } else {
       // Just load the values normally if already logged in today
       setStreak(currentStreak);
@@ -190,7 +190,7 @@ export default function MascotCompanion() {
       lastLoginDate: todayStr,
       ...updates
     };
-    localStorage.setItem('prashnasarathi_mascot', JSON.stringify(data));
+    localStorage.setItem('prashnasarathi_mascot_v2', JSON.stringify(data));
   };
 
   // Sparkles
