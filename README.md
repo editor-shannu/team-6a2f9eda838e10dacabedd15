@@ -22,6 +22,7 @@ A community-driven Q&A and FAQ platform designed to help students ask doubts wit
 | Divyanshi Mishra | divyanshimishra480@gmail.com |
 | Niranjan Praveen | niranjanbpraveen@gmail.com |
 | Rohit Wadettiwar | rohitwadettiwar.ds24@sbjit.edu.in |
+| Mudimadugula Srija | msrija2002@gmail.com |
 | Shawshank Redemp | shawshank.redemp5@gmail.com |
 | Isha Dudhatra | ishadudhatra@gmail.com |
 | Kinnera Swetha | Kinneraswetha04@gmail.com |
