@@ -4,6 +4,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { SocketProvider } from '@/context/SocketContext';
 import { NotificationProvider } from '@/context/NotificationContext';
 import { KeyboardProvider } from '@/context/KeyboardContext';
+import { VoiceCommandProvider } from '@/context/VoiceCommandContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -41,19 +42,21 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <SocketProvider>
             <NotificationProvider>
-              <KeyboardProvider>
-                <ThemeProvider>
-                  <PwaProvider>
-                    <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
-                    <Navbar />
-                    <main className="flex-1">
-                      <ErrorBoundary>{children}</ErrorBoundary>
-                    </main>
-                    <Footer />
-                    <VoiceSearchWrapper />
-                  </PwaProvider>
-                </ThemeProvider>
-              </KeyboardProvider>
+              <VoiceCommandProvider>
+                <KeyboardProvider>
+                  <ThemeProvider>
+                    <PwaProvider>
+                      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+                      <Navbar />
+                      <main className="flex-1">
+                        <ErrorBoundary>{children}</ErrorBoundary>
+                      </main>
+                      <Footer />
+                      <VoiceSearchWrapper />
+                    </PwaProvider>
+                  </ThemeProvider>
+                </KeyboardProvider>
+              </VoiceCommandProvider>
             </NotificationProvider>
           </SocketProvider>
         </AuthProvider>
