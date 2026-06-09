@@ -22,7 +22,7 @@
 - ✅ **Voice‑to‑Text for Asking** (microphone button on Ask Question page)
 - ✅ **File attachments & Image uploading** in rich-text answers
 - ✅ **Hyperlink sharing** when asking and answering questions
-- ✅ **AI Auto-Answer service** (Gemini bot) for baseline public question answering
+- ✅ **AI Auto-Answer service** (Gemini bot) for public and pending questions with automatic approval sync and duplicate prevention
 
 ### FAQ System
 - ✅ Browse FAQ pages by category
