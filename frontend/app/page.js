@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import RecommendedFAQs from '@/components/RecommendedFAQs';
+import { useVoiceCommand } from '@/context/VoiceCommandContext';
 
 
 const CATEGORY_ICONS = {
@@ -29,6 +30,7 @@ const CATEGORY_ICONS = {
 
 export default function HomePage() {
   const { user } = useAuth();
+  const { openSearch } = useVoiceCommand();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [faqs, setFaqs] = useState([]);
@@ -249,37 +251,65 @@ export default function HomePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         
         {/* Tech Hero Header */}
-        <section className="max-w-2xl mb-12 mt-4 text-center mx-auto flex flex-col items-center">
-          <div className="inline-flex items-center gap-1.5 font-mono text-[10px] text-[var(--color-primary)] bg-[var(--color-primary-subtle)] border border-[var(--color-primary)]/20 px-2.5 py-0.5 rounded-full mb-4">
+        <section className="max-w-3xl mb-12 mt-6 text-center mx-auto flex flex-col items-center">
+          <div className="inline-flex items-center gap-1.5 font-mono text-[10px] text-[var(--color-primary)] bg-[var(--color-primary-subtle)] border border-[var(--color-primary)]/20 px-2.5 py-0.5 rounded-full mb-5">
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] animate-pulse"></span>
             KNOWLEDGE BASE
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2 text-[var(--color-text)]">
-            Vicharanashala Q&A Portal
+          <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-3 select-none bg-clip-text text-transparent bg-gradient-to-r from-[var(--color-primary)] via-purple-500 to-indigo-500 hover:scale-[1.01] transition-transform duration-300">
+            PrashnaSārathi
           </h1>
-          <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed mb-6">
-            Search our Elasticsearch knowledge base of questions, FAQs, and community answers.
+          <p className="text-sm font-medium text-[var(--color-text-secondary)] leading-relaxed mb-8">
+            Your AI-Powered Community Q&A & Knowledge Base
           </p>
 
           {/* Hero Search */}
-          <form onSubmit={handleSearchSubmit} className="relative mb-4 w-full max-w-xl">
-            <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] focus-within:border-[var(--color-primary)]/50 focus-within:ring-2 focus-within:ring-[var(--color-primary-subtle)] transition-all">
-              <svg className="w-4 h-4 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          <form onSubmit={handleSearchSubmit} className="relative mb-6 w-full max-w-2xl">
+            <div className="flex items-center gap-3 px-4 py-3 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-secondary)] shadow-sm hover:shadow-md focus-within:shadow-md focus-within:border-[var(--color-primary)]/50 focus-within:ring-2 focus-within:ring-[var(--color-primary-subtle)] transition-all">
+              <svg className="w-5 h-5 text-[var(--color-text-muted)] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSearchSubmit(e);
-                  }
+                onFocus={(e) => {
+                  e.target.blur();
+                  openSearch();
                 }}
                 placeholder="Search questions, categories, tags..."
-                className="flex-1 bg-transparent text-xs text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-muted)]"
+                className="flex-1 bg-transparent text-sm text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-muted)] cursor-pointer"
               />
-              <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[9px] font-mono text-[var(--color-text-muted)] bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded">Ctrl K</kbd>
+              <div className="flex items-center gap-2.5 shrink-0">
+                {/* Microphone Button */}
+                <button
+                  type="button"
+                  title="Search with Voice"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openSearch();
+                  }}
+                  className="p-1.5 rounded-full hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] active:scale-95 transition-all"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                  </svg>
+                </button>
+
+                {/* AI Mode Pill Button */}
+                <button
+                  type="button"
+                  title="AI Mode Search"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openSearch();
+                  }}
+                  className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-semibold text-xs rounded-full px-3.5 py-1.5 flex items-center gap-1.5 shadow-md shadow-purple-500/25 transition-all hover:scale-[1.03] active:scale-[0.98]"
+                >
+                  <span>✨ AI Mode</span>
+                </button>
+              </div>
             </div>
           </form>
         </section>
