@@ -142,7 +142,7 @@ const SearchModal = forwardRef(function SearchModal({ isOpen, onClose, autoStart
         mediaRecorder.ondataavailable = e => chunks.push(e.data);
         mediaRecorder.onstop = async () => {
           const blob = new Blob(chunks, { type: 'audio/webm' });
-          const resp = await fetch('/api/transcribe', {
+          const resp = await fetch('/api/search/transcribe', {
             method: 'POST',
             body: blob
           });
@@ -185,7 +185,10 @@ const SearchModal = forwardRef(function SearchModal({ isOpen, onClose, autoStart
   // Auto‑start listening when opened via activation phrase
   useEffect(() => {
     if (isOpen && autoStart) {
-      handleVoiceInput();
+      const timer = setTimeout(() => {
+        handleVoiceInput();
+      }, 300);
+      return () => clearTimeout(timer);
     }
   }, [isOpen, autoStart]);
 

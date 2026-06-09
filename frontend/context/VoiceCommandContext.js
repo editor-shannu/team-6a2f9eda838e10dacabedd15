@@ -50,6 +50,8 @@ export const VoiceCommandProvider = ({ children }) => {
     recognition.continuous = true;
     recognition.maxAlternatives = 3;
 
+    let isActive = false;
+
     // Lenient activation phrase to match "Hey PrashnaSarathi" and common speech-to-text misrecognitions
     const activationPhrase = /(hey\s+)?(prashna|prasna|prishna|prisna|prasanna|krishna|prashan|prasan)\s*(sarathi|sarthi|sarati)/i;
 
@@ -67,16 +69,40 @@ export const VoiceCommandProvider = ({ children }) => {
       if (e.error !== 'aborted') {
         console.error('Global voice command error', e);
       }
+      isActive = false;
     };
 
-    try {
-      recognition.start();
-      recognitionRef.current = recognition;
-    } catch (err) {
-      console.error('Failed to start global SpeechRecognition:', err);
-    }
+    recognition.onend = () => {
+      isActive = false;
+    };
+
+    const startRecognition = () => {
+      if (isSearchOpen) return;
+      try {
+        recognition.start();
+        isActive = true;
+      } catch (err) {
+        // Already started or blocked by browser permission policy
+      }
+    };
+
+    // Initial start attempt
+    startRecognition();
+    recognitionRef.current = recognition;
+
+    // User gesture listener to restart recognition if blocked by browser autoplay/autoplay restriction
+    const handleInteraction = () => {
+      if (!isActive && recognitionRef.current) {
+        startRecognition();
+      }
+    };
+
+    window.addEventListener('click', handleInteraction);
+    window.addEventListener('touchstart', handleInteraction);
 
     return () => {
+      window.removeEventListener('click', handleInteraction);
+      window.removeEventListener('touchstart', handleInteraction);
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();

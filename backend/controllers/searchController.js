@@ -366,3 +366,82 @@ Generate the response matching the specified guidelines. Do not output anything 
     next(err);
   }
 };
+
+exports.transcribe = async (req, res, next) => {
+  try {
+    const apiKey = process.env.GEMINI_API;
+    if (!apiKey) {
+      console.warn("GEMINI_API key is missing for transcription");
+      return res.status(500).json({ error: "Gemini API key is not configured" });
+    }
+
+    // Read the raw binary audio data from stream
+    const chunks = [];
+    for await (const chunk of req) {
+      chunks.push(chunk);
+    }
+    const audioBuffer = Buffer.concat(chunks);
+
+    if (audioBuffer.length === 0) {
+      return res.json({ text: "" });
+    }
+
+    const base64Data = audioBuffer.toString('base64');
+    // Default to audio/webm since we expect webm from MediaRecorder
+    const mimeType = req.headers['content-type'] || 'audio/webm';
+
+    const axios = require('axios');
+    const modelsToTry = [
+      'gemini-2.5-flash',
+      'gemini-2.0-flash',
+      'gemini-3.5-flash',
+      'gemini-3.1-flash-lite'
+    ];
+
+    let transcription = "";
+
+    for (const modelName of modelsToTry) {
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+      const payload = {
+        contents: [{
+          parts: [
+            {
+              inlineData: {
+                mimeType: mimeType.split(';')[0], // strip any boundary/params
+                data: base64Data
+              }
+            },
+            {
+              text: "Please transcribe this audio into plain English text. Correct any spelling or phonetic errors based on the context of the platform PrashnaSarathi. If the user mentions names or abbreviations like 'vins', 'vicharanashala', 'samagama', 'spurti', 'yaksha', transcribe them exactly as written here. Output ONLY the raw transcribed text. Do not add any conversational replies, explanations, or markdown formatting."
+            }
+          ]
+        }],
+        generationConfig: {
+          temperature: 0.1
+        }
+      };
+
+      try {
+        console.log(`Trying Gemini model: ${modelName} for transcription`);
+        const response = await axios.post(geminiUrl, payload, {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 10000
+        });
+
+        const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          transcription = text.trim();
+          console.log(`Gemini transcription succeeded with model ${modelName}:`, transcription);
+          break;
+        }
+      } catch (err) {
+        console.error(`Gemini transcription failed with model ${modelName}:`, err.response?.data?.error?.message || err.message);
+      }
+    }
+
+    res.json({ text: transcription });
+  } catch (err) {
+    next(err);
+  }
+};
+

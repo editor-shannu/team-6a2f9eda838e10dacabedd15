@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useRef } from 'react';
-import { useVoiceCommand } from '@/context/VoiceCommandContext';
+import { VoiceCommandProvider, useVoiceCommand } from '@/context/VoiceCommandContext';
 import SearchModal from '@/components/SearchModal';
 
-export default function VoiceSearchWrapper() {
+function VoiceSearchInner() {
   const { isSearchOpen, closeSearch, autoStart } = useVoiceCommand();
   const searchRef = useRef(null);
   return (
@@ -16,3 +16,12 @@ export default function VoiceSearchWrapper() {
     />
   );
 }
+
+export default function VoiceSearchWrapper() {
+  return (
+    <VoiceCommandProvider>
+      <VoiceSearchInner />
+    </VoiceCommandProvider>
+  );
+}
+
