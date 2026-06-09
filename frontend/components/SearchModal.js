@@ -44,18 +44,35 @@ export default function SearchModal({ isOpen, onClose }) {
       return;
     }
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (listening) {
-      // stop listening
-      recognitionRef.current?.stop();
-      setListening(false);
-      return;
-    }
+    // Stop any existing recognition
+    recognitionRef.current?.stop();
+
     const recognition = new SpeechRecognition();
     recognition.lang = 'en-US';
-    // Enable interim results to provide live feedback (optional)
+    // Enable interim results for live feedback
     recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
+    recognition.continuous = true;
+    // Timeout after 5 seconds of inactivity
+    const silenceTimeout = 5000;
+    let silenceTimer;
+    const resetSilenceTimer = () => {
+      clearTimeout(silenceTimer);
+      silenceTimer = setTimeout(() => {
+        // No speech detected within timeout
+        recognition.stop();
+        setListening(false);
+        // Perform search with current query (could be empty or typed)
+        performSearch(query);
+      }, silenceTimeout);
+    };
+    // Start timer when recognition starts
+    recognition.onstart = () => {
+      setListening(true);
+      resetSilenceTimer();
+    };
+    // Interim results update query for user feedback
     recognition.onresult = (event) => {
+      clearTimeout(silenceTimer);
       let interim = '';
       let final = '';
       for (let i = 0; i < event.results.length; i++) {
@@ -67,25 +84,29 @@ export default function SearchModal({ isOpen, onClose }) {
           interim += transcript;
         }
       }
-      // Use final transcript if available, otherwise interim
       if (final.trim()) {
         setQuery(final.trim());
-        // Stop listening after final result
-        setListening(false);
+        // Final result received, stop listening and search
         recognition.stop();
+        setListening(false);
+        performSearch(final.trim());
       } else {
         setQuery(interim);
+        resetSilenceTimer();
       }
     };
-    recognition.onend = () => setListening(false);
     recognition.onerror = (e) => {
       console.error('Speech recognition error', e);
       toast.error('Voice input error');
+      clearTimeout(silenceTimer);
+      setListening(false);
+    };
+    recognition.onend = () => {
+      clearTimeout(silenceTimer);
       setListening(false);
     };
     recognition.start();
     recognitionRef.current = recognition;
-    setListening(true);
   };
 
   // Cleanup on component unmount
@@ -116,26 +137,33 @@ export default function SearchModal({ isOpen, onClose }) {
     }
   }, [query, pause, resume]);
 
-  useEffect(() => {
-    const search = async () => {
-      const sanitized = query.trim().substring(0, 100).replace(/[\u0000-\u001F\u007F-\u009F]/g, "").replace(/[<>]/g, "");
-      if (!sanitized) {
-        setResults([]);
-        return;
-      }
-      setLoading(true);
-      try {
-        const data = await api.get('/search', { q: sanitized, type });
-        setResults(data.results || []);
-        setSelectedIndex(-1);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Helper to perform a search request
+  const performSearch = async (searchQuery) => {
+    const sanitized = searchQuery.trim().substring(0, 100).replace(/[\u0000-\u001F\u007F-\u009F]/g, "").replace(/[\u003c\u003e]/g, "");
+    if (!sanitized) {
+      setResults([]);
+      return;
+    }
+    setLoading(true);
+    try {
+      const data = await api.get('/search', { q: sanitized, type });
+      setResults(data.results || []);
+      setSelectedIndex(-1);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const debounce = setTimeout(search, 200);
+  useEffect(() => {
+    const debounce = setTimeout(() => {
+      if (query.trim()) {
+        performSearch(query);
+      } else {
+        setResults([]);
+      }
+    }, 200);
     return () => clearTimeout(debounce);
   }, [query, type]);
 
