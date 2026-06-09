@@ -30,6 +30,26 @@ export default function AskQuestionPage() {
   const [selectedPreview, setSelectedPreview] = useState(null);
   const [previewLoading, setPreviewLoading] = useState(false);
 
+// Voice input handling using Web Speech API
+const handleVoiceInput = () => {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    toast.error('Voice recognition not supported in this browser.');
+    return;
+  }
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'en-US';
+  recognition.interimResults = false;
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    setForm(prev => ({ ...prev, title: transcript }));
+  };
+  recognition.onerror = (event) => {
+    toast.error(`Voice input error: ${event.error}`);
+  };
+  recognition.start();
+};
+
   const handlePreviewQuestion = async (qId) => {
     setPreviewLoading(true);
     try {
@@ -45,6 +65,8 @@ export default function AskQuestionPage() {
       setPreviewLoading(false);
     }
   };
+
+
 
   useEffect(() => {
     if (authLoading) return;
@@ -220,16 +242,23 @@ export default function AskQuestionPage() {
           <div className="relative">
             <label className="label">Title</label>
             <p className="text-xs text-[var(--color-text-secondary)] mb-1">Be specific and imagine you&apos;re asking a question to another person.</p>
-            <input
-              type="text"
-              required
-              value={form.title}
-              onChange={(e) => { setForm({ ...form, title: e.target.value }); setShowTitleSuggestions(true); }}
-              onFocus={() => form.title.length >= 3 && titleSuggestions.length > 0 && setShowTitleSuggestions(true)}
-              className={`input ${titleWarning ? 'border-amber-500 focus:ring-amber-500 bg-amber-50/10' : ''}`}
-              placeholder="e.g. How do I use useEffect in React for data fetching?"
-              maxLength={300}
-            />
+            <div className="relative flex items-center">
+  <input
+    type="text"
+    required
+    value={form.title}
+    onChange={(e) => { setForm({ ...form, title: e.target.value }); setShowTitleSuggestions(true); }}
+    onFocus={() => form.title.length >= 3 && titleSuggestions.length > 0 && setShowTitleSuggestions(true)}
+    className={`input ${titleWarning ? 'border-amber-500 focus:ring-amber-500 bg-amber-50/10' : ''}`}
+    placeholder="e.g. How do I use useEffect in React for data fetching?"
+    maxLength={300}
+  />
+  {('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) && (
+    <button type="button" onClick={handleVoiceInput} className="ml-2 p-2 rounded bg-primary-600 text-white hover:bg-primary-700" title="Voice Input">
+      🎤
+    </button>
+  )}
+</div>
             {titleWarning && (
               <div className="mt-2 p-3 bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-lg flex items-start gap-2 text-amber-800 dark:text-amber-400">
                 <svg className="w-5 h-5 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
