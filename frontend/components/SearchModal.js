@@ -22,6 +22,22 @@ const getSearchResultLink = (result) => {
   }
 };
 
+const cleanAndCorrectQuery = (text) => {
+  if (!text) return '';
+  let cleaned = text.trim();
+  
+  // Replace variations of "wins" / "wings" / etc with "VINS"
+  cleaned = cleaned.replace(/\b(wins|wings|vince|wince|winsome|vin|win|wing)\b/ig, 'VINS');
+  cleaned = cleaned.replace(/\b(vicharana\s*shala|vicharan\s*shala|vicharana\s*sala)\b/ig, 'Vicharanashala');
+  cleaned = cleaned.replace(/\b(samagama)\b/ig, 'Samagama');
+  cleaned = cleaned.replace(/\b(spurti|sphurti|sphurthi)\b/ig, 'Spurti');
+  cleaned = cleaned.replace(/\byaksha\b/ig, 'Yaksha');
+  cleaned = cleaned.replace(/\bsamagam\b/ig, 'samagama.in');
+  cleaned = cleaned.replace(/\bprashna\s*sarathi\b/ig, 'PrashnaSārathi');
+  
+  return cleaned;
+};
+
 const SearchModal = forwardRef(function SearchModal({ isOpen, onClose, autoStart }, ref) {
   const router = useRouter();
   const [query, setQuery] = useState('');
@@ -79,18 +95,24 @@ const SearchModal = forwardRef(function SearchModal({ isOpen, onClose, autoStart
             interim += transcript;
           }
         }
-        const activationPhrase = /prashna\s*sarathi\s*activate/i;
-        if (activationPhrase.test(final)) {
-          currentTimeout = extendedSilenceTimeout;
-          setQuery('');
-        }
-        if (final.trim()) {
-          setQuery(final.trim());
+        
+        // Lenient regex to detect and strip out activation phrases in user search if they say them
+        const activationPhrase = /(hey\s+)?(prashna|prasna|prishna|prisna|prasanna|krishna|prashan|prasan)\s*(sarathi|sarthi|sarati)/i;
+        
+        let processedFinal = final.replace(activationPhrase, '').trim();
+        let processedInterim = interim.replace(activationPhrase, '').trim();
+        
+        // Correct phonetic errors
+        processedFinal = cleanAndCorrectQuery(processedFinal);
+        processedInterim = cleanAndCorrectQuery(processedInterim);
+
+        if (processedFinal) {
+          setQuery(processedFinal);
           recognition.stop();
           setListening(false);
-          performSearch(final.trim());
+          performSearch(processedFinal);
         } else {
-          setQuery(interim);
+          setQuery(processedInterim);
           resetSilenceTimer();
         }
       };
@@ -126,8 +148,9 @@ const SearchModal = forwardRef(function SearchModal({ isOpen, onClose, autoStart
           });
           const data = await resp.json();
           if (data?.text) {
-            setQuery(data.text.trim());
-            performSearch(data.text.trim());
+            const correctedText = cleanAndCorrectQuery(data.text);
+            setQuery(correctedText);
+            performSearch(correctedText);
           }
         };
         mediaRecorder.start();
@@ -175,7 +198,8 @@ const SearchModal = forwardRef(function SearchModal({ isOpen, onClose, autoStart
   }, [query, pause, resume]);
 
   const performSearch = async (searchQuery) => {
-    const sanitized = searchQuery.trim().substring(0, 100).replace(/[\u0000-\u001F\u007F-\u009F]/g, "").replace(/[\u003c\u003e]/g, "");
+    const corrected = cleanAndCorrectQuery(searchQuery);
+    const sanitized = corrected.trim().substring(0, 100).replace(/[\u0000-\u001F\u007F-\u009F]/g, "").replace(/[\u003c\u003e]/g, "");
     if (!sanitized) {
       setResults([]);
       return;
