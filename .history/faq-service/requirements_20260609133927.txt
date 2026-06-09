@@ -5,5 +5,3 @@ transformers
 sentence-transformers
 torch
 tf-keras
-pytest
-httpx
