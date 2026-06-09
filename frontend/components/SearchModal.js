@@ -39,8 +39,10 @@ export default function SearchModal({ isOpen, onClose }) {
   const recognitionRef = useRef(null);
 
   const handleVoiceInput = () => {
+    // Fallback: if SpeechRecognition not available, try AI transcription (placeholder)
     if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
-      toast.error('Speech recognition not supported in this browser');
+      // Placeholder: send audio to AI service (not implemented)
+      toast.error('Speech recognition not supported. Please type your query.');
       return;
     }
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -51,26 +53,25 @@ export default function SearchModal({ isOpen, onClose }) {
     recognition.lang = 'en-US';
     // Enable interim results for live feedback
     recognition.interimResults = true;
-    recognition.continuous = true;
-    // Timeout after 5 seconds of inactivity
-    const silenceTimeout = 5000;
+    recognition.maxAlternatives = 1;
+    // Default silence timeout (5s) and extended timeout for activation command (15s)
+    const defaultSilenceTimeout = 5000;
+    const extendedSilenceTimeout = 15000;
     let silenceTimer;
+    let currentTimeout = defaultSilenceTimeout;
     const resetSilenceTimer = () => {
       clearTimeout(silenceTimer);
       silenceTimer = setTimeout(() => {
-        // No speech detected within timeout
         recognition.stop();
         setListening(false);
-        // Perform search with current query (could be empty or typed)
+        // Perform search with current query (could be empty)
         performSearch(query);
-      }, silenceTimeout);
+      }, currentTimeout);
     };
-    // Start timer when recognition starts
     recognition.onstart = () => {
       setListening(true);
       resetSilenceTimer();
     };
-    // Interim results update query for user feedback
     recognition.onresult = (event) => {
       clearTimeout(silenceTimer);
       let interim = '';
@@ -84,9 +85,16 @@ export default function SearchModal({ isOpen, onClose }) {
           interim += transcript;
         }
       }
+      // Activation command detection (case-insensitive)
+      const activationPhrase = /prashnasarathi\s+activate/i;
+      if (activationPhrase.test(final)) {
+        // Switch to extended listening time and keep modal open
+        currentTimeout = extendedSilenceTimeout;
+        setQuery(''); // clear query
+        // Optionally you could trigger opening the search modal via a callback if provided
+      }
       if (final.trim()) {
         setQuery(final.trim());
-        // Final result received, stop listening and search
         recognition.stop();
         setListening(false);
         performSearch(final.trim());
