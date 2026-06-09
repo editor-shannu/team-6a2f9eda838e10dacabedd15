@@ -34,7 +34,7 @@
 ### Search & Discovery
 - ✅ Full‑text search across questions, FAQs, users
 - ✅ SearchModal (Ctrl+K or /) with voice‑to‑text support
-- ✅ **Voice command wake activation ("Hey PrashnaSarathi")** to open and start listening automatically
+- ✅ **Voice search activated on button press** to open search and start listening on demand
 - ✅ Trending searches (Redis)
 - ✅ Search result caching (Redis 60 s)
 - ✅ Tag browsing and filtering
