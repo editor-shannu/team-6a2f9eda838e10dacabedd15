@@ -12,14 +12,14 @@
 - ✅ Voting (upvote/downvote on questions and answers)
 - ✅ Accept answer (moderators/admins only, +1 Sp)
 - ✅ Me Too button (bump question priority, real-time updates)
-- ✅ Solved My Doubt button (distinct from upvote, real‑time updates)
+- ✅ Solved My Doubt button (distinct from upvote, real-time updates)
 - ✅ Confidence levels on answers (🤔 I think so / 👍 Pretty sure / 💯 I know this)
 - ✅ Duplicate detection on question creation
-- ✅ Question escalation (no‑response after 24 h)
+- ✅ Question escalation (no-response after 24 h)
 - ✅ Anonymous question asking
 - ✅ Real‑time updates via Socket.IO (new answers, me‑too, solved counts)
 - ✅ Spurti Points (Sp) rewards (+10 Sp) on accepted answers, deductions (‑10 Sp) on unaccepted answers
-- ✅ Voice‑to‑Text for Asking (microphone button on title input, Web Speech API)
+- ✅ **Voice‑to‑Text for Asking** (microphone button on Ask Question page)
 
 ### FAQ System
 - ✅ Browse FAQ pages by category
@@ -30,7 +30,7 @@
 
 ### Search & Discovery
 - ✅ Full‑text search across questions, FAQs, users
-- ✅ SearchModal (Ctrl+K or /)
+- ✅ SearchModal (Ctrl+K or /) with voice‑to‑text support
 - ✅ Trending searches (Redis)
 - ✅ Search result caching (Redis 60 s)
 - ✅ Tag browsing and filtering
@@ -62,7 +62,7 @@
 
 ### UI/UX
 - ✅ Dark mode toggle (localStorage, system preference)
-- ✅ Student onboarding walkthrough (4‑step modal)
+- ✅ Student onboarding walkthrough (4‑step modal) with animations
 - ✅ Keyboard shortcuts (j/k navigation, / search, Esc close)
 - ✅ Responsive mobile layout
 - ✅ Rich text editor (TipTap) & Markdown rendering (GFM)
@@ -80,15 +80,23 @@
 
 ---
 
-## Planned / Future Enhancements (currently not in codebase)
-- Doubt Resolution Dashboard (`/my‑doubts`)
-- "Similar Solved Doubts" sidebar
-- Weekly Doubt Digest (email summary)
-- Request Answer from Contributor button
-- Threaded follow‑up discussions under answers
-- Related learning resources linking
-- Voice‑to‑Text for answers (future expansion)
+## Pending / Future Enhancements
+
+### Phase 2
+- [ ] Doubt Resolution Dashboard (`/my-doubts`)
+- [ ] "Similar Solved Doubts" sidebar
+- [ ] Related Learning Resources linking
+
+### Phase 3
+- [ ] Weekly Doubt Digest (email summary)
+- [ ] Request Answer from Contributor button
+
+### Phase 4
+- [ ] Threaded follow‑up discussions under answers
+
+### Phase 5 (Optional)
+- [ ] Voice‑to‑Text for answers (future expansion)
 
 ---
 
-*All items above are kept up‑to‑date with the current repository state.*
+*All items above reflect the current state of the repository.*

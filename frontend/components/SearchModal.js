@@ -6,6 +6,14 @@ import { formatDate, truncate } from '@/lib/utils';
 import { useTypewriter } from '@/hooks/useTypewriter';
 import api from '@/lib/api';
 
+// Add voice input handling
+import { toast } from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { formatDate, truncate } from '@/lib/utils';
+import { useTypewriter } from '@/hooks/useTypewriter';
+import api from '@/lib/api';
+
 const getSearchResultLink = (result) => {
   const typeLabel = result._type || (result.body !== undefined ? 'question' : result.description !== undefined ? 'faq' : 'user');
   if (typeLabel === 'question') {
@@ -28,9 +36,51 @@ export default function SearchModal({ isOpen, onClose }) {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [listening, setListening] = useState(false); // voice listening state
   const inputRef = useRef(null);
   const resultsRef = useRef(null);
   const { text: placeholderText, pause, resume } = useTypewriter();
+  const recognitionRef = useRef(null);
+
+  const handleVoiceInput = () => {
+    if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
+      toast.error('Speech recognition not supported in this browser');
+      return;
+    }
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (listening) {
+      // stop listening
+      recognitionRef.current?.stop();
+      setListening(false);
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setQuery(transcript);
+      setListening(false);
+    };
+    recognition.onend = () => setListening(false);
+    recognition.onerror = (e) => {
+      console.error('Speech recognition error', e);
+      toast.error('Voice input error');
+      setListening(false);
+    };
+    recognition.start();
+    recognitionRef.current = recognition;
+    setListening(true);
+  };
+
+  // Cleanup on component unmount
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.stop();
+    };
+  }, []);
+
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -144,6 +194,15 @@ export default function SearchModal({ isOpen, onClose }) {
                   className="w-full h-full text-lg outline-none bg-transparent text-[var(--color-text)] relative z-10"
                   placeholder=""
                 />
+                <button
+                  type="button"
+                  onClick={handleVoiceInput}
+                  className={`absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full ${listening ? 'bg-[var(--color-primary)] text-white animate-pulse' : 'bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-secondary)]'} z-20`}
+                  aria-label="Voice input"
+                  aria-pressed={listening}
+                >
+                  🎤
+                </button>
                 {!query && (
                   <span className="absolute inset-0 flex items-center text-lg text-[var(--color-text-muted)] pointer-events-none overflow-hidden whitespace-nowrap">
                     {placeholderText}
