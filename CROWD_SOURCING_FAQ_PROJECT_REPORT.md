@@ -14,9 +14,24 @@
 
 ## 2. Executive Summary
 
-In academic institutions and communities, students often struggle to ask questions due to social anxiety, peer judgment, or complex interface layouts. Moreover, similar doubts are asked repeatedly, which exhausts resources and creates a disjointed knowledge base. 
+### 2.1 The Challenge
+In educational institutions and community learning hubs, students frequently encounter obstacles when trying to resolve their doubts. Two primary problems exist:
+1. **Fear of Asking:** Many students suffer from social anxiety or fear of peer judgment, preventing them from raising their hand in class or posting on public forums.
+2. **Repetitive Workload:** Teachers and administrators are often overwhelmed by the same questions being asked repeatedly, leading to delayed responses and scattered information.
 
-**PrashnaSārathi** addresses these problems by providing an anonymous, gamified, and AI-assisted platform. By using machine learning models for duplicate detection and automatic baseline answering, alongside real-time web technologies and an interactive mascot companion, the platform lowers barrier-to-entry for questioning while providing quick resolutions and high user engagement.
+### 2.2 The Solution: PrashnaSārathi
+**PrashnaSārathi** is an intelligent, community-driven Q&A and FAQ platform designed to make learning collaborative, engaging, and efficient. It acts as a digital bridge where users can ask questions freely, find verified answers instantly, and help their peers. 
+
+The platform addresses the core problems using three main approaches:
+* **Anonymous & Safe Q&A:** Students can choose to post questions anonymously, removing the fear of judgment and increasing platform participation.
+* **AI-Powered Assistance:** When a user types a new question, the platform automatically scans for similar existing doubts to prevent duplicates. If the question is new, an AI model instantly generates a baseline answer to reduce wait times.
+* **Interactive Gamification:** A friendly, floating companion mascot named *Pyro*, combined with daily streaks, points, and accessory shops, makes asking and answering questions feel like a rewarding game.
+
+### 2.3 Key Outcomes & Impact
+By deploying PrashnaSārathi, communities can achieve:
+* **Higher Engagement:** Gamified progression encourages students to actively help one another, building a self-sustaining knowledge base.
+* **Reduced Overhead:** Blocking duplicate questions and auto-answering standard FAQs saves time for teachers and moderators.
+* **High-Speed Knowledge Access:** Instant search indexes make finding information simple and immediate, whether on a desktop browser or mobile device.
 
 ---
 
