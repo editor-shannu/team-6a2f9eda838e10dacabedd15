@@ -242,9 +242,9 @@ The screen recording below showcases the interface styling, navigation, interact
 
 ## 7. Challenges & Limitations
 
-* **Machine Learning Latency:** Zero-shot classification models require significant memory and processing power, creating cold-start latency when run on basic CPU servers.
-* **Mascot Coordinate Consistency:** Storing screen coordinates across different devices (e.g., swapping from desktop to mobile screens) can cause placement issues.
-* **SMTP Delivery Restrictions:** Outbound email alerts for leaderboard milestones require local SMTP credentials and can hit rate limits on free configurations.
+* **AI Model Response Times (Speed vs. Accuracy):** Running the zero-shot classifier for spam filtering and semantic analysis requires high CPU power. On basic web hosting plans, this can cause a brief delay (1-2 seconds) when a student submits a question while the model processes the text.
+* **Mascot Position Syncing (Across Different Screens):** The draggable mascot (Pyro) stores its screen location in the browser's memory so it stays where the user left it. However, if a user drags Pyro on a large desktop screen and then logs in from a small mobile phone, the saved position coordinates can sometimes place Pyro off-screen or over crucial buttons.
+* **SMTP Email Delivery Limits (Third-Party Quotas):** Delivering automated email notifications for daily streak reminders and leaderboard updates requires SMTP email servers. Under free tier limits, sending massive batches of emails during high-activity campus events can hit rate limits, causing delivery delays or failed messages.
 
 ---
 
