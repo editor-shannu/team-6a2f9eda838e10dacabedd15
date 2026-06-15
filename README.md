@@ -6,7 +6,13 @@
 
 <br>
 
-A community-driven Q&A and FAQ platform designed to help students ask doubts without fear, get answers fast, and feel their problems are genuinely solved.
+**PrashnaSārathi** (Sanskrit for *"The Question Guide"* or *"Doubt Charioteer"*) is a unified, community-driven Q&A and FAQ platform designed to streamline academic doubt resolution. The system helps students overcome anxiety, get answers fast, and build a collaborative knowledge repository.
+
+### Key Operational Pillars:
+* **Safe & Inclusive Q&A:** Anonymous posting toggles for questions and answers to remove the fear of peer judgment.
+* **Instant Search & Automated Answering:** Real-time duplicate checks, global autocomplete search (`Ctrl+K`), and automated AI-driven baseline answers to resolve doubts immediately.
+* **Healthy Engagement Mechanics:** Gamified daily streaks (with hardcore reset penalties), mascot companion evolution (Pyro), and shop accessories unlockable via Spurti Points (SP).
+* **Automated Quality Assurance:** Integration with an AI spam microservice to filter noise and keyboard smashes.
 
 **Live Demo:** [https://prashnasarathi.vercel.app/](https://prashnasarathi.vercel.app/)
 

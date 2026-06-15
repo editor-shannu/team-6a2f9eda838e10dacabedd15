@@ -94,20 +94,20 @@
 
 ## Pending / Future Enhancements
 
-### Phase 2
-- [ ] Doubt Resolution Dashboard (`/my-doubts`)
-- [ ] "Similar Solved Doubts" sidebar
+### Phase 2: Personal Workspaces & Recommendations
+- [ ] **Doubt Resolution Dashboard (`/my-doubts`):** A centralized workspace for students to track open questions, resolution states (AI, review, resolved), and monitor learning stats/help points.
+- [ ] **"Similar Solved Doubts" Sidebar Recommendations:** An intelligent side panel using context comparison to suggest related resolved questions and learning materials to users as they read a post.
 - [ ] Related Learning Resources linking
 
-### Phase 3
-- [ ] Weekly Doubt Digest (email summary)
+### Phase 3: Automated Digests & Collaboration
+- [ ] **Weekly Academic Doubt Digest (Automated Summaries):** Scheduled email digests highlighting top questions for students and summarising common trouble-spots for instructors.
 - [ ] Request Answer from Contributor button
 
-### Phase 4
-- [ ] Threaded follow‑up discussions under answers
+### Phase 4: Structured Discussions
+- [ ] **Threaded Follow-Up Discussions (Nested Replies):** A nested comment system underneath answers allowing quick follow-up questions without cluttering the main timeline.
 
-### Phase 5 (Optional)
-- [ ] Voice‑to‑Text for answers (future expansion)
+### Phase 5 (Optional)
+- [ ] Voice-to-Text for answers (future expansion)
 
 ---
 
