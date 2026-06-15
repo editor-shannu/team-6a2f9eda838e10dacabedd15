@@ -511,3 +511,13 @@ If you prefer running services directly on the host machine:
 4. Start development servers:
    * **Backend**: `cd backend && npm run dev` (starts on port 5000)
    * **Frontend**: `cd frontend && npm run dev` (starts on port 3000)
+
+---
+
+## Future Enhancements
+The following core tasks represent the roadmap for upcoming iterations of PrashnaSārathi, matching the project report specifications:
+* **Doubt Resolution Dashboard (`/my-doubts`):** A centralized workspace for students to track open questions, resolution states (AI, review, resolved), and monitor learning stats/help points.
+* **"Similar Solved Doubts" Sidebar Recommendations:** An intelligent side panel using context comparison to suggest related resolved questions and learning materials to users as they read a post.
+* **Weekly Academic Doubt Digest (Automated Summaries):** Scheduled email digests highlighting top questions for students and summarising common trouble-spots for instructors.
+* **Threaded Follow-Up Discussions (Nested Replies):** A nested comment system underneath answers allowing quick follow-up questions without cluttering the main timeline.
+
