@@ -248,8 +248,10 @@ The screen recording below showcases the interface styling, navigation, interact
 * **Real-time Database and Search Index Sync (MongoDB & Elasticsearch):**
   To enable high-speed fuzzy search, the system replicates question and FAQ data from the primary MongoDB database to the Elasticsearch index. The key challenge is keeping these two databases perfectly synchronized. When questions are added, updated, or deleted, the changes must immediately reflect in the Elasticsearch search index. If a network delay or minor server glitch occurs during replication, the search results can become temporarily outdated, showing stale or deleted questions.
 
-* **Concurrence & Cache Invalidation (Socket.IO & Redis):**
-  PrashnaSārathi relies on Socket.IO to broadcast real-time state changes (like upvote tallies, daily streaks, "Me Too" clicks, and answer acceptance notifications) to all active users. At the same time, Redis caches search results for 60 seconds to reduce database strain. The challenge is ensuring that the Redis cache is instantly cleared or updated the moment a question's state changes (e.g., when a doubt is marked as solved). If cache invalidation fails, users might see old solved/unsolved statuses when searching, even though the real-time board has updated.
+* **Serverless Hosting Constraints (Vercel Deployment & Fallbacks):**
+  While Vercel is used to host the application frontend, its serverless environment does not support persistent running processes. This creates significant challenges for:
+  * *Socket.IO WebSockets:* Vercel serverless functions run on-demand and terminate quickly, which disconnects traditional WebSocket servers. To bypass this, the frontend includes a **Fallback Polling Engine** that automatically switches to periodic HTTP polling (every 8 seconds) if a Socket.IO connection cannot be maintained, and uses Web Push messages to display notifications.
+  * *External Service Dependencies:* Persistent services like Elasticsearch, Redis caching, and the FastAPI Python AI models cannot run directly inside Vercel's runtime. They must be hosted externally on persistent cloud servers (like Render or Railway) and connected via secure API gateways.
 
 ---
 
