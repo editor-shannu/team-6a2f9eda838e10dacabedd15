@@ -37,11 +37,14 @@ By deploying PrashnaSārathi, communities can achieve:
 
 ## 3. Introduction
 
-PrashnaSārathi is a next-generation community-driven FAQ and Q&A ecosystem. Its primary goals are to:
-1. **Remove Fear:** Offer anonymous question options and an approachable user experience.
-2. **Accelerate Doubt Resolution:** Instantly query existing FAQs, detect duplicate submissions, and generate AI-driven baseline answers immediately upon posting.
-3. **Engage Users:** Utilize gamified streaks, evolvable companion mascots, and a Spurti Points rewards economy.
-4. **Maintain Quality:** Prevent spam, noise, and gibberish submissions using zero-shot classification pipelines.
+**PrashnaSārathi** (derived from Sanskrit, meaning *"The Question Guide"* or *"Doubt Charioteer"*) is a modern web platform designed to streamline knowledge sharing and doubt resolution within schools, universities, and learning communities. It serves as a unified hub where students can seek help, contributors can share knowledge, and administrators can manage official information.
+
+Rather than being a traditional message board, the platform is built on four simple pillars to make learning interactive and stress-free:
+
+* **A Safe Space to Ask:** By offering anonymous posting options, PrashnaSārathi ensures that no student is held back by anxiety or the fear of looking silly in front of their peers.
+* **Instant Information Access:** Students get answers immediately through a combination of high-speed search filters, pre-verified institutional FAQs, and automated AI assistance.
+* **Healthy Community Habits:** Through gamification mechanics—including daily streaks, reputation points, and accessories—the platform transforms answering questions into a collaborative game that rewards helpful students.
+* **Maintained Content Quality:** The platform keeps the community space clean and high-quality by automatically detecting spam, gibberish inputs, and duplicate questions before they are published.
 
 ---
 
