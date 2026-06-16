@@ -107,7 +107,6 @@
 - `backend/` – Express API server (port 5000) with controllers, models, routes, services (auto-answer, etc.), socket configuration.
 - `frontend/` – Next.js 14 App Router (port 3000) with app pages, components (MascotCompanion, ReportIssueButton, etc.), context, hooks, lib, public, pwa, services, styles.
 - `FastAPI_python_model/` – Python FastAPI spam and noise classification microservice.
-- `faq-service/` – Python FAQ helper classification service.
 - `docker-compose.yml` – Docker/Podman orchestration configuration.
 - `nginx/` – Nginx reverse proxy configurations.
 - `setup-docker.sh` & `setup.sh` – Deployment scripts.

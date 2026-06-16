@@ -53,49 +53,54 @@
 
 ```
 prashnasarathi/
-├── backend/              # Express API server (port 5000)
-│   ├── assets/           # Static email templates and system templates
-│   ├── config/           # Database, Redis, Elasticsearch, Firebase Admin, and Kafka connections
-│   ├── controllers/      # Route handlers (auth, questions, answers, search, etc.)
-│   ├── data/             # Local database JSON exports
-│   ├── middleware/       # JWT auth, error handling, rate limiting, file upload
-│   ├── models/           # Mongoose schemas (User, Question, Answer, FAQ, SpurtiPointLog, AuditLog, etc.)
-│   ├── routes/           # Express endpoint router definitions
-│   ├── seeds/            # Database seed scripts
-│   ├── services/         # ES Search, recommendations, notifications, email worker, and auto-answer (Gemini bot)
-│   ├── socket/           # Socket.IO real-time event server configuration
-│   ├── uploads/          # Local storage path for uploaded user files
-│   └── utils/            # Validators, email transposer, permissions
-├── frontend/             # Next.js 14 App Router client (port 3000)
-│   ├── app/              # App Router pages (faqs, questions, admin, saved, search, notifications, etc.)
-│   ├── components/       # Shared UI components (MascotCompanion, ReportIssueButton, OnboardingModal, SearchModal, recommended FAQs, Tiptap editor)
-│   ├── context/          # Auth, Socket, Theme, Notifications, and VoiceCommand Contexts
-│   ├── data/             # Frontend static local JSON data
-│   ├── hooks/            # Custom hooks (keyboard shortcuts, PWA installers)
-│   ├── lib/              # API clients & Axios interceptors
-│   ├── public/           # Static public files (manifest, Service Worker sw.js, icons, etc.)
-│   ├── pwa/              # PWA service worker configurations and wrapper
-│   ├── scripts/          # Service Worker build scripts
-│   ├── services/         # Frontend API calls wrapper services
-│   ├── styles/           # Tailwind configuration and global CSS layout style
-│   └── tailwind.config.js# Custom styling utility mappings
-├── FastAPI_python_model/ # FastAPI AI microservice (spam & noise classification)
-│   ├── main.py           # Python server entry point
-│   ├── Dockerfile        # Container build definition
-│   └── requirements.txt  # Python packages list
-├── faq-service/          # Python FAQ classification microservice helper
-│   ├── main.py           # Python script entry point
-│   └── requirements.txt  # Python dependencies list
-├── nginx/                # Nginx reverse proxy configurations
-├── podman/               # Standalone Docker deployment configurations
-├── kafka/                # Optional Kafka docker-compose configurations
-├── docker-compose.yml    # Multi-service container orchestration mapping
-├── .dockerignore         # Docker build context exclusions
-├── setup-docker.sh       # Unified Docker container execution setup script
-├── faqs-complete.json    # 126 FAQ items (seed data)
-├── metadata.json         # Category metadata
-├── vercel.json           # Frontend Vercel hosting configuration
-└── todo.md               # Roadmap tracking and checklist document
+├── backend/                           # Express API server (port 5000)
+│   ├── assets/                        # Static email templates and system templates
+│   ├── config/                        # Database, Redis, Elasticsearch, Firebase Admin, and Kafka connections
+│   ├── controllers/                   # Route handlers (auth, questions, answers, search, etc.)
+│   ├── data/                          # Local database JSON exports
+│   ├── middleware/                    # JWT auth, error handling, rate limiting, file upload
+│   ├── models/                        # Mongoose schemas (User, Question, Answer, FAQ, SpurtiPointLog, AuditLog, etc.)
+│   ├── routes/                        # Express endpoint router definitions
+│   ├── seeds/                         # Database seed scripts
+│   ├── services/                      # ES Search, recommendations, notifications, email worker, and auto-answer (Gemini bot)
+│   ├── socket/                        # Socket.IO real-time event server configuration
+│   ├── uploads/                       # Local storage path for uploaded user files
+│   └── utils/                         # Validators, email transposer, permissions
+├── frontend/                          # Next.js 14 App Router client (port 3000)
+│   ├── app/                           # App Router pages (faqs, questions, admin, saved, search, notifications, etc.)
+│   ├── components/                    # Shared UI components (MascotCompanion, OnboardingModal, SearchModal, Tiptap editor, etc.)
+│   ├── context/                       # Auth, Socket, Theme, Notifications, and VoiceCommand Contexts
+│   ├── data/                          # Frontend static local JSON data
+│   ├── hooks/                         # Custom hooks (keyboard shortcuts, PWA installers)
+│   ├── lib/                           # API clients & Axios interceptors
+│   ├── public/                        # Static public files (manifest, Service Worker sw.js, icons, etc.)
+│   ├── pwa/                           # PWA service worker configurations and wrapper
+│   ├── scripts/                       # Service Worker build scripts
+│   ├── services/                      # Frontend API calls wrapper services
+│   └── styles/                        # global CSS layout style with Tailwind mapping
+├── FastAPI_python_model/              # FastAPI AI microservice (spam & noise classification)
+│   ├── main.py                        # Python server entry point
+│   ├── Dockerfile                     # Container build definition
+│   └── requirements.txt               # Python packages list
+├── nginx/                             # Nginx reverse proxy configurations
+├── podman/                            # Standalone Docker deployment configurations
+├── kafka/                             # Optional Kafka docker-compose configurations
+├── screenshots/                       # Gallery of app screenshot diagrams (System Architecture, Leaderboard, etc.)
+├── .dockerignore                      # Docker build context exclusions
+├── .gitignore                         # Version control exclusions
+├── CLAUDE.md                          # General commands and project usage instructions
+├── CROWD_SOURCING_FAQ_PROJECT_REPORT.md# Detailed technical project report
+├── PrashnaSārathi (प्रश्नसारथि) — CSFAQ REPORT.md # Contextual legacy project report
+├── docker-compose.yml                 # Multi-service container orchestration mapping
+├── faqs-complete.json                 # 126 FAQ items (seed data)
+├── LICENSE                            # MIT license
+├── Makefile                           # Development task shortcuts
+├── metadata.json                      # Category metadata
+├── package.json                       # Workspace/root scripts configurations
+├── setup.sh                           # Application initialization setup script
+├── setup-docker.sh                    # Unified Docker container execution setup script
+├── vercel.json                        # Frontend Vercel hosting configuration
+└── todo.md                            # Roadmap tracking and checklist document
 ```
 
 ---
