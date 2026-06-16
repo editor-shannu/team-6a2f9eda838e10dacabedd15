@@ -1,0 +1,105 @@
+const Question = require('../models/Question');
+const Answer = require('../models/Answer');
+const User = require('../models/User');
+const Notification = require('../models/Notification');
+
+const flagContent = async ({ targetType, targetId, reason, flaggedBy }) => {
+  let target;
+  if (targetType === 'Question') {
+    target = await Question.findById(targetId);
+  } else if (targetType === 'Answer') {
+    target = await Answer.findById(targetId);
+  }
+  if (!target) throw new Error('Target not found');
+
+  target.isFlagged = true;
+  target.flagReason = reason;
+  target.flaggedBy = flaggedBy;
+  await target.save();
+
+  // Notify admins
+  const admins = await User.find({ role: 'admin' });
+  const linkUrl = targetType === 'Question'
+    ? `/questions/${targetId}`
+    : `/questions/${target.question}#answer-${targetId}`;
+
+  const notifications = admins.map(admin => ({
+    recipient: admin._id,
+    type: 'moderation',
+    title: 'Content flagged',
+    message: `${targetType} flagged: ${reason}`,
+    link: linkUrl,
+    referenceType: targetType,
+    reference: targetId,
+  }));
+  await Notification.insertMany(notifications);
+};
+
+const clearFlag = async ({ targetType, targetId }) => {
+  let target;
+  if (targetType === 'Question') {
+    target = await Question.findById(targetId);
+  } else if (targetType === 'Answer') {
+    target = await Answer.findById(targetId);
+  }
+  if (!target) throw new Error('Target not found');
+
+  target.isFlagged = false;
+  target.flagReason = null;
+  target.flaggedBy = null;
+  await target.save();
+};
+
+const closeQuestion = async ({ questionId, reason, closedBy }) => {
+  const question = await Question.findById(questionId);
+  if (!question) throw new Error('Question not found');
+  question.status = 'closed';
+  question.closedReason = reason;
+  question.closedBy = closedBy;
+  question.closedAt = new Date();
+  await question.save();
+};
+
+const deleteContent = async ({ targetType, targetId }) => {
+  if (targetType === 'Question') {
+    await Question.findByIdAndUpdate(targetId, { status: 'deleted', isDeleted: true });
+  } else if (targetType === 'Answer') {
+    await Answer.findByIdAndUpdate(targetId, { status: 'deleted', isDeleted: true });
+  }
+};
+
+const banUser = async ({ userId, reason }) => {
+  await User.findByIdAndUpdate(userId, { isBanned: true, banReason: reason, status: 'blocked' });
+  await Question.updateMany({ author: userId }, { visibility: 'hidden' });
+  await Answer.updateMany({ author: userId }, { visibility: 'hidden' });
+
+  try {
+    const { recalculateAnswerCount } = require('../utils/helpers');
+    const userAnswers = await Answer.find({ author: userId });
+    const questionIds = [...new Set(userAnswers.map(a => a.question.toString()))];
+    for (const qId of questionIds) {
+      await recalculateAnswerCount(qId);
+    }
+  } catch (err) {
+    console.error('Failed to recalculate answer counts in banUser:', err.message);
+  }
+};
+
+const unbanUser = async (userId) => {
+  await User.findByIdAndUpdate(userId, { isBanned: false, banReason: null, status: 'active', suspendedUntil: null });
+  await Question.updateMany({ author: userId, visibility: 'hidden' }, { visibility: 'public' });
+  await Answer.updateMany({ author: userId, visibility: 'hidden' }, { visibility: 'public' });
+
+  try {
+    const { recalculateAnswerCount } = require('../utils/helpers');
+    const userAnswers = await Answer.find({ author: userId });
+    const questionIds = [...new Set(userAnswers.map(a => a.question.toString()))];
+    for (const qId of questionIds) {
+      await recalculateAnswerCount(qId);
+    }
+  } catch (err) {
+    console.error('Failed to recalculate answer counts in unbanUser:', err.message);
+  }
+};
+
+module.exports = { flagContent, clearFlag, closeQuestion, deleteContent, banUser, unbanUser };

@@ -1,0 +1,185 @@
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    minlength: 3,
+    maxlength: 30,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
+  },
+  password: {
+    type: String,
+    required: function() {
+      return this.authProvider === 'email' || this.authProvider === 'both';
+    },
+    minlength: 6,
+    select: false,
+  },
+  displayName: { type: String, trim: true, maxlength: 50 },
+  bio: { type: String, maxlength: 500 },
+  avatar: { type: String, default: '' },
+  avatarUrl: { type: String },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+  authProvider: {
+    type: String,
+    enum: ['google', 'email', 'both'],
+    default: 'email',
+  },
+  website: { type: String },
+  location: { type: String },
+  role: {
+    type: String,
+    enum: ['user', 'moderator', 'admin'],
+    default: 'user',
+  },
+  reputation: { type: Number, default: 1 },
+  spurtiPoints: { type: Number, default: 0 },
+  badges: [{ type: String }],
+
+  // Stats
+  questionCount: { type: Number, default: 0 },
+  answerCount: { type: Number, default: 0 },
+  savedCount: { type: Number, default: 0 },
+
+  // Preferences
+  preferences: {
+    emailNotifications: { type: Boolean, default: true },
+    pushNotifications: { type: Boolean, default: true },
+  },
+
+  // Moderation
+  isBanned: { type: Boolean, default: false },
+  banReason: { type: String },
+  flags: { type: Number, default: 0 },
+  lastActive: { type: Date },
+
+  // Onboarding
+  hasCompletedOnboarding: { type: Boolean, default: false },
+  hasAcceptedTerms: { type: Boolean, default: false },
+  currentPhase: {
+    type: String,
+    enum: ['pre', 'phase1_coursework', 'phase1_completed', 'phase2_project', 'completed']
+  },
+  receivedTop10Email: { type: Boolean, default: false },
+  tagAffinity: [{
+    tag: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now }
+  }],
+  // Spam Prevention & Content Moderation Fields
+  trustScore: { type: Number, default: 0 },
+  trustLevel: {
+    type: String,
+    enum: ["new", "regular", "trusted"],
+    default: "new"
+  },
+  status: {
+    type: String,
+    enum: ["active", "warned", "shadow_banned", "suspended", "blocked"],
+    default: "active"
+  },
+  suspendedUntil: { type: Date },
+  violationCount: { type: Number, default: 0 },
+  lastPostedAt: { type: Date },
+  ipHistory: [{ type: String }],
+  deviceFingerprints: [{ type: String }],
+  premodApproved: { type: Boolean, default: false },
+  fcmTokens: [{ type: String }],
+}, { timestamps: true });
+
+userSchema.index({ username: 'text', displayName: 'text', bio: 'text' });
+userSchema.index({ role: 1 });
+
+userSchema.pre('save', async function (next) {
+  if (this.isNew) {
+    this.spurtiPoints = 10;
+    this._isNewUser = true;
+  }
+
+  // Update trust level based on trust score
+  if (this.isModified('trustScore') || this.isNew) {
+    if (this.trustScore <= 50) {
+      this.trustLevel = 'new';
+    } else if (this.trustScore <= 200) {
+      this.trustLevel = 'regular';
+    } else {
+      this.trustLevel = 'trusted';
+    }
+  }
+
+  if (!this.password || !this.isModified('password')) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  next();
+});
+
+userSchema.post('save', async function (doc, next) {
+  if (this._isNewUser) {
+    this._isNewUser = false;
+    try {
+      const SpurtiPointLog = mongoose.model('SpurtiPointLog');
+      const existingLog = await SpurtiPointLog.findOne({ user: doc._id, reason: 'Base Spurti Points credited on account registration' });
+      if (!existingLog) {
+        await SpurtiPointLog.create({
+          user: doc._id,
+          amount: 10,
+          action: 'reward',
+          reason: 'Base Spurti Points credited on account registration',
+        });
+      }
+    } catch (err) {
+      console.error('Error creating initial SpurtiPointLog:', err.message);
+    }
+  }
+  next();
+});
+
+userSchema.methods.comparePassword = async function (candidate) {
+  if (!this.password) return false;
+  return bcrypt.compare(candidate, this.password);
+};
+
+userSchema.methods.toPublicJSON = function () {
+  return {
+    id: this._id,
+    username: this.username,
+    displayName: this.displayName,
+    bio: this.bio,
+    avatar: this.avatar,
+    avatarUrl: this.avatarUrl,
+    website: this.website,
+    location: this.location,
+    role: this.role,
+    reputation: this.reputation,
+    spurtiPoints: this.spurtiPoints || 0,
+    badges: this.badges,
+    questionCount: this.questionCount,
+    answerCount: this.answerCount,
+    hasCompletedOnboarding: this.hasCompletedOnboarding,
+    hasAcceptedTerms: this.hasAcceptedTerms || false,
+    currentPhase: this.currentPhase,
+    authProvider: this.authProvider,
+    trustScore: this.trustScore,
+    trustLevel: this.trustLevel,
+    status: this.status,
+    suspendedUntil: this.suspendedUntil,
+    violationCount: this.violationCount,
+    premodApproved: this.premodApproved,
+    createdAt: this.createdAt,
+    isOwner: this.email === 'faqportal.in@gmail.com',
+  };
+};
+
+module.exports = mongoose.model('User', userSchema);

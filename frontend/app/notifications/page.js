@@ -1,0 +1,240 @@
+'use client';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { useNotifications } from '@/context/NotificationContext';
+import { formatDate } from '@/lib/utils';
+import api from '@/lib/api';
+import toast from 'react-hot-toast';
+
+const notificationIcons = {
+  new_answer: '💬',
+  answer_accepted: '✅',
+  upvote: '👍',
+  downvote: '👎',
+  comment: '💭',
+  mention: '@',
+  follow: '👤',
+  badge: '🏅',
+  system: '🔔',
+  moderation: '⚡',
+  faq_update: '📖',
+};
+
+export default function NotificationsPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const { 
+    notifications = [], 
+    unreadCount = 0, 
+    markAsRead, 
+    markAllRead: markAllReadGlobal, 
+    archiveNotification,
+    refreshNotifications,
+    browserPermission,
+    requestBrowserPermission,
+    showBrowserNotification
+  } = useNotifications() || {};
+  const [loading, setLoading] = useState(!notifications.length);
+
+  useEffect(() => {
+    if (!user) return;
+    const load = async () => {
+      if (refreshNotifications) {
+        await refreshNotifications();
+      }
+      setLoading(false);
+    };
+    load();
+  }, [user, refreshNotifications]);
+
+  const handleMarkAllRead = async () => {
+    try {
+      if (markAllReadGlobal) {
+        await markAllReadGlobal();
+      } else {
+        await api.put('/notifications/read');
+      }
+      toast.success('All marked as read');
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  const handleNotificationClick = async (e, notification) => {
+    if (!notification.isRead) {
+      try {
+        if (markAsRead) {
+          await markAsRead([notification._id]);
+        } else {
+          await api.put('/notifications/read', { ids: [notification._id] });
+        }
+      } catch (_) {}
+    }
+    if (notification.link && !e.target.closest('a')) {
+      router.push(notification.link);
+    }
+  };
+
+  const handleArchive = async (id) => {
+    try {
+      if (archiveNotification) {
+        await archiveNotification(id);
+      } else {
+        await api.put(`/notifications/${id}/archive`);
+      }
+      toast.success('Notification archived');
+    } catch (err) {
+      toast.error(err.message || 'Failed to archive notification');
+    }
+  };
+
+  if (!user) return (
+    <div className="max-w-3xl mx-auto px-4 py-8 text-center">
+      <p className="text-[var(--color-text-secondary)]">Please login to view notifications</p>
+      <Link href="/auth?mode=login" className="btn-primary mt-4 inline-block">Login</Link>
+    </div>
+  );
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--color-text)]">Notifications</h1>
+          {unreadCount > 0 && <p className="text-sm text-[var(--color-text-secondary)]">{unreadCount} unread</p>}
+        </div>
+        {unreadCount > 0 && (
+          <button onClick={handleMarkAllRead} className="btn-secondary btn-sm">Mark all as read</button>
+        )}
+      </div>
+
+      {browserPermission !== 'granted' && (
+        <div className="mb-6 p-4 rounded-xl border border-primary-500/30 bg-primary-500/5 dark:border-primary-500/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl mt-0.5">🔔</span>
+            <div>
+              <h3 className="font-semibold text-sm text-[var(--color-text)]">Enable Push Notifications</h3>
+              <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                {browserPermission === 'denied' 
+                  ? 'Notifications are blocked in your browser. Click here to request permission again or verify your settings.' 
+                  : 'Get real-time OS-level system alerts for answers, upvotes, and announcements on this device.'}
+              </p>
+            </div>
+          </div>
+          <button 
+            onClick={requestBrowserPermission}
+            className="btn-primary text-xs font-semibold px-4 py-2 rounded-lg shrink-0 self-start sm:self-center"
+          >
+            {browserPermission === 'denied' ? 'Request Again' : 'Enable Banners'}
+          </button>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="space-y-3">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="card p-4 animate-pulse">
+              <div className="h-4 bg-[var(--color-border)] rounded w-3/4" />
+            </div>
+          ))}
+        </div>
+      ) : notifications.length === 0 ? (
+        <div className="card p-12 text-center">
+          <p className="text-4xl mb-3">🔔</p>
+          <h3 className="text-lg font-medium text-[var(--color-text)] mb-2">No notifications</h3>
+          <p className="text-[var(--color-text-secondary)]">You&apos;re all caught up!</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {notifications.map(notification => (
+            <div
+              key={notification._id}
+              onClick={(e) => handleNotificationClick(e, notification)}
+              className={`card p-4 flex items-start gap-3 transition-colors cursor-pointer hover:bg-[var(--color-bg-tertiary)]/40 ${
+                !notification.isRead ? 'bg-primary-50/40 dark:bg-primary-950/10 border-primary-200 dark:border-primary-900/50 shadow-sm' : ''
+              }`}
+            >
+              <span className="text-xl shrink-0">{notificationIcons[notification.type] || '🔔'}</span>
+              <div className="flex-1 min-w-0">
+                {notification.link ? (
+                  <Link href={notification.link} className="hover:text-primary-600 block" onClick={(e) => handleNotificationClick(e, notification)}>
+                    <p className={`text-sm ${!notification.isRead ? 'font-semibold' : ''}`}>{notification.title}</p>
+                  </Link>
+                ) : (
+                  <p className={`text-sm ${!notification.isRead ? 'font-semibold' : ''}`}>{notification.title}</p>
+                )}
+                {notification.message && <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{notification.message}</p>}
+                <p className="text-xs text-[var(--color-text-secondary)] mt-1 opacity-60">{formatDate(notification.createdAt)}</p>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleArchive(notification._id);
+                }}
+                className="text-[var(--color-text-secondary)] hover:text-[var(--color-text)] text-sm shrink-0"
+                title="Archive"
+              >
+                &times;
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* OS Troubleshooting & Diagnostics */}
+      <div className="mt-8 p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-tertiary)]/20 animate-in fade-in duration-500">
+        <h3 className="font-semibold text-sm text-[var(--color-text)] flex items-center gap-2">
+          <span>⚙️</span> OS Notification Troubleshooting
+        </h3>
+        <p className="text-xs text-[var(--color-text-secondary)] mt-2 leading-relaxed">
+          If you are not receiving system tray notifications on your device, please verify your operating system settings:
+        </p>
+        <ul className="list-disc list-inside text-xs text-[var(--color-text-secondary)] mt-3 space-y-2 pl-2">
+          <li>
+            <strong>Disable Focus Assist / Do Not Disturb:</strong> In Windows, ensure the <em>Do Not Disturb</em> / <em>Focus Assist</em> mode (the sleeping bell icon in the bottom-right taskbar calendar/notification panel) is turned <strong>OFF</strong>. When active, Windows silences all banner alerts.
+          </li>
+          <li>
+            <strong>Allow Browser in Windows Settings:</strong> Go to <strong>Windows Settings &gt; System &gt; Notifications</strong>. Scroll down to &quot;Get notifications from these senders&quot; and ensure your browser (e.g., <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong>) is toggled to <strong>ON</strong>.
+          </li>
+          <li>
+            <strong>Verify Browser Site Settings:</strong> Click the lock/settings icon in the browser address bar next to the website URL and verify that <strong>Notifications</strong> is set to <strong>Allow</strong>.
+          </li>
+        </ul>
+        <div className="mt-4 pt-4 border-t border-[var(--color-border)] flex items-center gap-3">
+          <button
+            onClick={() => {
+              console.log('[Page Debug] Test button clicked.');
+              console.log('[Page Debug] type of showBrowserNotification:', typeof showBrowserNotification);
+              console.log('[Page Debug] Notification API check:', (typeof window !== 'undefined' && 'Notification' in window) ? 'supported' : 'not supported');
+              if (typeof window !== 'undefined' && 'Notification' in window) {
+                console.log('[Page Debug] Notification.permission:', window.Notification.permission);
+              }
+              
+              if (showBrowserNotification) {
+                try {
+                  showBrowserNotification({
+                    title: 'Test Notification Works! 🎉',
+                    message: 'If you see this, your browser and OS notification settings are configured correctly.'
+                  });
+                  toast.success('Test notification triggered!');
+                  console.log('[Page Debug] showBrowserNotification call complete.');
+                } catch (clickErr) {
+                  console.error('[Page Debug] Caught error invoking showBrowserNotification:', clickErr);
+                  toast.error(`Error: ${clickErr.message}`);
+                }
+              } else {
+                toast.error('Notification system not initialized yet');
+                console.warn('[Page Debug] showBrowserNotification is undefined or null');
+              }
+            }}
+            className="px-4 py-2 bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-tertiary)]/80 border border-[var(--color-border)] text-[var(--color-text)] text-xs font-semibold rounded-lg transition-colors"
+          >
+            Test OS Notification
+          </button>
+        </div>
+      </div>
+
+    </div>
+  );
+}
