@@ -28,7 +28,6 @@
 | **Divyanshi Mishra** | Backend Developer | divyanshimishra480@gmail.com |
 | **Niranjan Praveen** | Database & Search Engineer | niranjanbpraveen@gmail.com |
 | **Rohit Wadettiwar** | DevOps / Docker Admin | rohitwadettiwar.ds24@sbjit.edu.in |
-| **Mudimadugula Srija** | Backend Developer | msrija2002@gmail.com |
 | **Shawshank Redemp** | QA & AI Model Engineer | shawshank.redemp5@gmail.com |
 | **Isha Dudhatra** | Frontend Developer | ishadudhatra@gmail.com |
 | **Kinnera Swetha** | Content Management | Kinneraswetha04@gmail.com |
